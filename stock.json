@@ -1,0 +1,611 @@
+{
+  "meta": {
+    "title": "สต็อกจำลองของร้านยา",
+    "note": "ข้อมูลสมมติทั้งหมด สร้างด้วย make_stock.py เพื่อใช้สาธิต dashboard",
+    "as_of": "2026-11-19",
+    "currency": "THB",
+    "count": 100
+  },
+  "items": [
+    {
+      "sku": "PARA500",
+      "on_hand": 1953,
+      "unit_cost": 4.9,
+      "expiry_date": "2028-08-31"
+    },
+    {
+      "sku": "PARA120S",
+      "on_hand": 49,
+      "unit_cost": 44,
+      "expiry_date": "2029-03-27"
+    },
+    {
+      "sku": "IBU400",
+      "on_hand": 162,
+      "unit_cost": 3.26,
+      "expiry_date": "2028-09-08"
+    },
+    {
+      "sku": "IBU100S",
+      "on_hand": 14,
+      "unit_cost": 78,
+      "expiry_date": "2027-05-22"
+    },
+    {
+      "sku": "NAPRO250",
+      "on_hand": 142,
+      "unit_cost": 2.17,
+      "expiry_date": "2026-12-13"
+    },
+    {
+      "sku": "DICLO25",
+      "on_hand": 530,
+      "unit_cost": 4.41,
+      "expiry_date": "2028-09-26"
+    },
+    {
+      "sku": "DICLOGEL",
+      "on_hand": 0,
+      "unit_cost": 51,
+      "expiry_date": "2027-10-22"
+    },
+    {
+      "sku": "MEFE250",
+      "on_hand": 784,
+      "unit_cost": 6.87,
+      "expiry_date": "2028-08-20"
+    },
+    {
+      "sku": "CELE200",
+      "on_hand": 54,
+      "unit_cost": 12,
+      "expiry_date": "2027-02-02"
+    },
+    {
+      "sku": "AMOX500",
+      "on_hand": 746,
+      "unit_cost": 2.2,
+      "expiry_date": "2028-06-12"
+    },
+    {
+      "sku": "AMOX125S",
+      "on_hand": 20,
+      "unit_cost": 112,
+      "expiry_date": "2026-12-12"
+    },
+    {
+      "sku": "AMCLAV875",
+      "on_hand": 96,
+      "unit_cost": 16,
+      "expiry_date": "2027-07-12"
+    },
+    {
+      "sku": "DICLOX250",
+      "on_hand": 613,
+      "unit_cost": 2.23,
+      "expiry_date": "2027-08-19"
+    },
+    {
+      "sku": "CEPH500",
+      "on_hand": 618,
+      "unit_cost": 6.21,
+      "expiry_date": "2028-01-17"
+    },
+    {
+      "sku": "AZI250",
+      "on_hand": 192,
+      "unit_cost": 3.96,
+      "expiry_date": "2027-09-23"
+    },
+    {
+      "sku": "DOXY100",
+      "on_hand": 161,
+      "unit_cost": 5.58,
+      "expiry_date": "2028-11-26"
+    },
+    {
+      "sku": "NORF400",
+      "on_hand": 345,
+      "unit_cost": 5.72,
+      "expiry_date": "2028-09-02"
+    },
+    {
+      "sku": "CIPRO500",
+      "on_hand": 70,
+      "unit_cost": 5.65,
+      "expiry_date": "2028-10-27"
+    },
+    {
+      "sku": "COTRI480",
+      "on_hand": 214,
+      "unit_cost": 3.69,
+      "expiry_date": "2028-12-20"
+    },
+    {
+      "sku": "NITRO100",
+      "on_hand": 222,
+      "unit_cost": 4.43,
+      "expiry_date": "2027-07-13"
+    },
+    {
+      "sku": "METRO400",
+      "on_hand": 48,
+      "unit_cost": 1.3,
+      "expiry_date": "2027-09-03"
+    },
+    {
+      "sku": "FLUCO150",
+      "on_hand": 23,
+      "unit_cost": 18,
+      "expiry_date": "2028-02-25"
+    },
+    {
+      "sku": "CLOTRI-C",
+      "on_hand": 11,
+      "unit_cost": 61,
+      "expiry_date": "2027-09-17"
+    },
+    {
+      "sku": "KETO-C",
+      "on_hand": 28,
+      "unit_cost": 46,
+      "expiry_date": "2027-05-02"
+    },
+    {
+      "sku": "ACYC400",
+      "on_hand": 148,
+      "unit_cost": 2.58,
+      "expiry_date": "2027-07-02"
+    },
+    {
+      "sku": "ACYC-C",
+      "on_hand": 17,
+      "unit_cost": 58,
+      "expiry_date": "2028-04-13"
+    },
+    {
+      "sku": "ALBEN200",
+      "on_hand": 192,
+      "unit_cost": 5.69,
+      "expiry_date": "2027-05-14"
+    },
+    {
+      "sku": "MEBEN100",
+      "on_hand": 141,
+      "unit_cost": 2.24,
+      "expiry_date": "2028-02-22"
+    },
+    {
+      "sku": "NYST-S",
+      "on_hand": 13,
+      "unit_cost": 112,
+      "expiry_date": "2028-09-08"
+    },
+    {
+      "sku": "AMLO5",
+      "on_hand": 1163,
+      "unit_cost": 3.6,
+      "expiry_date": "2027-10-09"
+    },
+    {
+      "sku": "AMLO10",
+      "on_hand": 394,
+      "unit_cost": 3.31,
+      "expiry_date": "2028-07-05"
+    },
+    {
+      "sku": "ENAL5",
+      "on_hand": 619,
+      "unit_cost": 2.97,
+      "expiry_date": "2027-12-12"
+    },
+    {
+      "sku": "LOSAR50",
+      "on_hand": 969,
+      "unit_cost": 0.79,
+      "expiry_date": "2028-05-30"
+    },
+    {
+      "sku": "HCTZ25",
+      "on_hand": 336,
+      "unit_cost": 4.02,
+      "expiry_date": "2027-10-12"
+    },
+    {
+      "sku": "ATEN50",
+      "on_hand": 342,
+      "unit_cost": 3.45,
+      "expiry_date": "2027-06-06"
+    },
+    {
+      "sku": "PROP10",
+      "on_hand": 537,
+      "unit_cost": 4.63,
+      "expiry_date": "2027-10-28"
+    },
+    {
+      "sku": "FURO40",
+      "on_hand": 276,
+      "unit_cost": 4.2,
+      "expiry_date": "2027-05-08"
+    },
+    {
+      "sku": "SPIRO25",
+      "on_hand": 191,
+      "unit_cost": 3.37,
+      "expiry_date": "2028-09-28"
+    },
+    {
+      "sku": "ISDN5",
+      "on_hand": 0,
+      "unit_cost": 5.41,
+      "expiry_date": "2027-09-06"
+    },
+    {
+      "sku": "ASA81",
+      "on_hand": 324,
+      "unit_cost": 5.13,
+      "expiry_date": "2028-05-21"
+    },
+    {
+      "sku": "CLOP75",
+      "on_hand": 225,
+      "unit_cost": 9.5,
+      "expiry_date": "2027-07-07"
+    },
+    {
+      "sku": "WARF3",
+      "on_hand": 151,
+      "unit_cost": 1.45,
+      "expiry_date": "2027-10-13"
+    },
+    {
+      "sku": "METF500",
+      "on_hand": 180,
+      "unit_cost": 3.19,
+      "expiry_date": "2027-01-23"
+    },
+    {
+      "sku": "METF850",
+      "on_hand": 687,
+      "unit_cost": 1.39,
+      "expiry_date": "2028-09-30"
+    },
+    {
+      "sku": "GLIP5",
+      "on_hand": 551,
+      "unit_cost": 1.07,
+      "expiry_date": "2028-10-06"
+    },
+    {
+      "sku": "GLIC80",
+      "on_hand": 702,
+      "unit_cost": 4.97,
+      "expiry_date": "2027-11-23"
+    },
+    {
+      "sku": "GLIB5",
+      "on_hand": 223,
+      "unit_cost": 5.74,
+      "expiry_date": "2028-07-26"
+    },
+    {
+      "sku": "SIMVA20",
+      "on_hand": 200,
+      "unit_cost": 2.68,
+      "expiry_date": "2029-03-04"
+    },
+    {
+      "sku": "ATOR20",
+      "on_hand": 408,
+      "unit_cost": 7.5,
+      "expiry_date": "2027-09-25"
+    },
+    {
+      "sku": "ROSU10",
+      "on_hand": 244,
+      "unit_cost": 11,
+      "expiry_date": "2027-02-07"
+    },
+    {
+      "sku": "GEMF600",
+      "on_hand": 212,
+      "unit_cost": 3.88,
+      "expiry_date": "2028-01-30"
+    },
+    {
+      "sku": "OMEP20",
+      "on_hand": 383,
+      "unit_cost": 4.89,
+      "expiry_date": "2027-11-23"
+    },
+    {
+      "sku": "PANTO40",
+      "on_hand": 297,
+      "unit_cost": 3.55,
+      "expiry_date": "2027-02-10"
+    },
+    {
+      "sku": "FAMO20",
+      "on_hand": 192,
+      "unit_cost": 4.78,
+      "expiry_date": "2027-07-25"
+    },
+    {
+      "sku": "SIMET80",
+      "on_hand": 389,
+      "unit_cost": 1.36,
+      "expiry_date": "2029-03-18"
+    },
+    {
+      "sku": "DOMP10",
+      "on_hand": 206,
+      "unit_cost": 2.4,
+      "expiry_date": "2027-10-24"
+    },
+    {
+      "sku": "METOC10",
+      "on_hand": 315,
+      "unit_cost": 1.0,
+      "expiry_date": "2028-03-04"
+    },
+    {
+      "sku": "HYOS10",
+      "on_hand": 226,
+      "unit_cost": 5.09,
+      "expiry_date": "2028-02-10"
+    },
+    {
+      "sku": "LOPE2",
+      "on_hand": 384,
+      "unit_cost": 1.96,
+      "expiry_date": "2028-01-05"
+    },
+    {
+      "sku": "CHAR250",
+      "on_hand": 103,
+      "unit_cost": 3.76,
+      "expiry_date": "2028-01-06"
+    },
+    {
+      "sku": "BISA5",
+      "on_hand": 259,
+      "unit_cost": 0.49,
+      "expiry_date": "2027-07-25"
+    },
+    {
+      "sku": "SENNA75",
+      "on_hand": 216,
+      "unit_cost": 2.14,
+      "expiry_date": "2027-07-23"
+    },
+    {
+      "sku": "LACTU-S",
+      "on_hand": 32,
+      "unit_cost": 80,
+      "expiry_date": "2028-04-10"
+    },
+    {
+      "sku": "CETI10",
+      "on_hand": 121,
+      "unit_cost": 2.95,
+      "expiry_date": "2029-01-17"
+    },
+    {
+      "sku": "LORA10",
+      "on_hand": 951,
+      "unit_cost": 3.84,
+      "expiry_date": "2028-06-04"
+    },
+    {
+      "sku": "CPM4",
+      "on_hand": 1179,
+      "unit_cost": 1.61,
+      "expiry_date": "2028-08-03"
+    },
+    {
+      "sku": "FEXO180",
+      "on_hand": 262,
+      "unit_cost": 10,
+      "expiry_date": "2027-08-18"
+    },
+    {
+      "sku": "HYDROX10",
+      "on_hand": 325,
+      "unit_cost": 5.22,
+      "expiry_date": "2029-03-15"
+    },
+    {
+      "sku": "SALB-INH",
+      "on_hand": 39,
+      "unit_cost": 230,
+      "expiry_date": "2028-02-10"
+    },
+    {
+      "sku": "BUDE-INH",
+      "on_hand": 0,
+      "unit_cost": 360,
+      "expiry_date": "2028-04-16"
+    },
+    {
+      "sku": "MONT10",
+      "on_hand": 104,
+      "unit_cost": 14,
+      "expiry_date": "2026-12-04"
+    },
+    {
+      "sku": "DEXTRO-S",
+      "on_hand": 46,
+      "unit_cost": 56,
+      "expiry_date": "2029-05-01"
+    },
+    {
+      "sku": "BROM8",
+      "on_hand": 780,
+      "unit_cost": 4.88,
+      "expiry_date": "2027-08-21"
+    },
+    {
+      "sku": "AMBRO30",
+      "on_hand": 463,
+      "unit_cost": 2.73,
+      "expiry_date": "2028-12-07"
+    },
+    {
+      "sku": "GUAI-S",
+      "on_hand": 38,
+      "unit_cost": 77,
+      "expiry_date": "2027-01-13"
+    },
+    {
+      "sku": "NAC200",
+      "on_hand": 207,
+      "unit_cost": 3.22,
+      "expiry_date": "2027-08-11"
+    },
+    {
+      "sku": "FLUTI-NS",
+      "on_hand": 10,
+      "unit_cost": 240,
+      "expiry_date": "2027-05-26"
+    },
+    {
+      "sku": "HC1-C",
+      "on_hand": 0,
+      "unit_cost": 40,
+      "expiry_date": "2028-04-14"
+    },
+    {
+      "sku": "BETA-C",
+      "on_hand": 30,
+      "unit_cost": 108,
+      "expiry_date": "2028-02-21"
+    },
+    {
+      "sku": "TA-C",
+      "on_hand": 17,
+      "unit_cost": 76,
+      "expiry_date": "2028-04-16"
+    },
+    {
+      "sku": "MUPI-O",
+      "on_hand": 5,
+      "unit_cost": 60,
+      "expiry_date": "2028-06-22"
+    },
+    {
+      "sku": "PVP-I",
+      "on_hand": 64,
+      "unit_cost": 99,
+      "expiry_date": "2027-10-22"
+    },
+    {
+      "sku": "CAP-ED",
+      "on_hand": 29,
+      "unit_cost": 88,
+      "expiry_date": "2028-10-23"
+    },
+    {
+      "sku": "TOBRA-ED",
+      "on_hand": 16,
+      "unit_cost": 63,
+      "expiry_date": "2028-01-04"
+    },
+    {
+      "sku": "OFLO-EAR",
+      "on_hand": 17,
+      "unit_cost": 47,
+      "expiry_date": "2027-05-04"
+    },
+    {
+      "sku": "VITC500",
+      "on_hand": 679,
+      "unit_cost": 3.08,
+      "expiry_date": "2028-01-13"
+    },
+    {
+      "sku": "FOLIC5",
+      "on_hand": 780,
+      "unit_cost": 1.18,
+      "expiry_date": "2029-01-18"
+    },
+    {
+      "sku": "FESO4",
+      "on_hand": 907,
+      "unit_cost": 5.1,
+      "expiry_date": "2028-11-04"
+    },
+    {
+      "sku": "CACO3",
+      "on_hand": 338,
+      "unit_cost": 5.25,
+      "expiry_date": "2028-09-25"
+    },
+    {
+      "sku": "VITB1",
+      "on_hand": 714,
+      "unit_cost": 2.31,
+      "expiry_date": "2028-10-01"
+    },
+    {
+      "sku": "AMIT10",
+      "on_hand": 138,
+      "unit_cost": 2.18,
+      "expiry_date": "2029-02-19"
+    },
+    {
+      "sku": "FLUN5",
+      "on_hand": 82,
+      "unit_cost": 5.32,
+      "expiry_date": "2027-12-22"
+    },
+    {
+      "sku": "BETAH6",
+      "on_hand": 53,
+      "unit_cost": 5.83,
+      "expiry_date": "2029-03-13"
+    },
+    {
+      "sku": "GABA300",
+      "on_hand": 56,
+      "unit_cost": 1.89,
+      "expiry_date": "2028-05-30"
+    },
+    {
+      "sku": "FLUOX20",
+      "on_hand": 81,
+      "unit_cost": 3.39,
+      "expiry_date": "2027-12-12"
+    },
+    {
+      "sku": "SERT50",
+      "on_hand": 77,
+      "unit_cost": 8.0,
+      "expiry_date": "2027-11-09"
+    },
+    {
+      "sku": "METHO500",
+      "on_hand": 250,
+      "unit_cost": 2.97,
+      "expiry_date": "2028-07-29"
+    },
+    {
+      "sku": "ORPH-P",
+      "on_hand": 292,
+      "unit_cost": 3.05,
+      "expiry_date": "2029-03-07"
+    },
+    {
+      "sku": "COLCH06",
+      "on_hand": 180,
+      "unit_cost": 1.45,
+      "expiry_date": "2029-01-20"
+    },
+    {
+      "sku": "ALLO100",
+      "on_hand": 241,
+      "unit_cost": 3.12,
+      "expiry_date": "2027-04-23"
+    }
+  ]
+}
