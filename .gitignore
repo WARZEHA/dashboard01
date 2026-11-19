@@ -1,0 +1,17 @@
+# repo นี้เก็บเฉพาะ dashboard ร้านยา ไฟล์อื่นในโฟลเดอร์ AILern (รูปส่วนตัว การ์ดโปรไฟล์ my-desktop ฯลฯ) ไม่ถูกอัปขึ้น
+/*
+!/.gitignore
+!/README.md
+!/index.html
+!/shared/
+!/dashboard01/
+!/dashboard02/
+
+# dashboard01: ใช้แค่หน้าเว็บ ไฟล์อื่นเป็นของเก่าที่ไม่ได้ใช้แล้ว
+/dashboard01/*
+!/dashboard01/index.html
+
+# dashboard02: ไม่เอารูปและไฟล์ชั่วคราว
+/dashboard02/*.png
+/dashboard02/*.jpg
+__pycache__/

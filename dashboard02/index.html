@@ -1,0 +1,1102 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>สต็อกและการจ่ายยา</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;700&family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/theme.css">
+<style>
+/* ---------- เฉพาะหน้านี้ ---------- */
+.switch { overflow-x: auto; scrollbar-width: none; }
+.switch::-webkit-scrollbar { display: none; }
+.switch button { white-space: nowrap; }
+
+.period { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-top: 24px; padding-top: 18px; border-top: 1px solid rgba(255, 255, 255, .14); }
+.period-label { font-size: 14px; font-weight: 700; color: var(--on-dark); margin-right: 4px; }
+.period .chip {
+  font-size: 14px; font-weight: 700; height: 40px; padding: 0 16px; cursor: pointer;
+  background: transparent; color: var(--on-dark); border: 1px solid rgba(255, 255, 255, .35);
+}
+.period .chip:hover { border-color: var(--on-dark); }
+.period .chip[aria-pressed="true"] { background: var(--on-dark); color: var(--surface-dark); border-color: var(--on-dark); }
+.period input[type="date"] {
+  font: inherit; font-size: 14px; height: 40px; padding: 0 10px; color: var(--on-dark); background: transparent;
+  border: 1px solid rgba(255, 255, 255, .35); color-scheme: dark;
+}
+.period-range { font-size: 14px; font-weight: 300; color: var(--on-dark-soft); }
+.period-range b { color: var(--on-dark); }
+.period-note { font-size: 13px; font-weight: 300; color: var(--on-dark-soft); margin-left: auto; }
+
+/* กราฟแท่งแนวตั้งรายวัน */
+.cols { display: flex; align-items: flex-end; gap: 2px; height: 200px; border-bottom: 1px solid var(--hairline-strong); position: relative; }
+.cols .col { flex: 1 1 0; min-width: 0; height: 100%; display: flex; align-items: flex-end; cursor: default; }
+.cols .col i { display: block; width: 100%; max-width: 24px; margin: 0 auto; background: var(--series-1); }
+.cols .col.weekend i { background: var(--seq-3); }
+.key-sw { flex: none; }
+.cols .col:hover i { background: var(--primary-active); }
+.cols .avg { position: absolute; left: 0; right: 0; border-top: 2px dashed var(--ink); pointer-events: none; }
+.cols .avg span { position: absolute; right: 0; top: -22px; font-size: 13px; font-weight: 700; background: var(--canvas); padding: 0 4px; }
+.cols-axis { display: flex; gap: 2px; margin-top: 6px; font-size: 12px; font-weight: 300; color: var(--muted); }
+.cols-axis span { flex: 1 1 0; min-width: 0; text-align: center; white-space: nowrap; overflow: visible; }
+
+/* รายการสิ่งที่ต้องทำ */
+.actions { list-style: none; margin: 0; padding: 0; }
+.actions li { display: grid; grid-template-columns: 28px 1fr auto; gap: 14px; align-items: center; padding: 14px 4px; border-bottom: 1px solid var(--hairline); }
+.actions li:last-child { border-bottom: 0; }
+.actions .a-title { font-weight: 700; }
+.actions .a-sub { font-size: 14px; font-weight: 300; color: var(--body); }
+.actions .ico { width: 20px; height: 20px; }
+.go {
+  font-size: 13px; font-weight: 700; letter-spacing: .5px; border: 1px solid var(--hairline-strong); background: var(--canvas);
+  height: 40px; padding: 0 16px; cursor: pointer; white-space: nowrap;
+}
+.go:hover { border-color: var(--ink); }
+
+/* ไทม์ไลน์ล็อต */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.chips button {
+  font-size: 14px; height: 40px; padding: 0 14px; cursor: pointer; background: var(--canvas);
+  border: 1px solid var(--hairline-strong); display: inline-flex; align-items: center; gap: 8px;
+}
+.chips button[aria-pressed="true"] { background: var(--ink); color: var(--canvas); border-color: var(--ink); }
+.chips button small { font-weight: 300; opacity: .8; }
+.gantt-row {
+  display: grid; grid-template-columns: minmax(150px, 26%) 1fr 8.5em; gap: 14px; align-items: center;
+  padding: 6px 8px; border-bottom: 1px solid var(--hairline); cursor: pointer;
+}
+.gantt-row:hover { background: var(--surface-soft); }
+.gantt-track { position: relative; height: 22px; }
+.gantt-track .tick { position: absolute; top: -6px; bottom: -6px; width: 1px; background: var(--hairline); }
+.gantt-track .use { position: absolute; top: 7px; height: 8px; background: var(--seq-2); }
+.gantt-track .waste { position: absolute; top: 7px; height: 8px; background: color-mix(in srgb, var(--critical) 55%, transparent); }
+.gantt-track .exp { position: absolute; top: 50%; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; box-shadow: 0 0 0 2px var(--canvas); }
+.gantt-axis { display: grid; grid-template-columns: minmax(150px, 26%) 1fr 8.5em; gap: 14px; padding: 8px 8px 0; }
+.gantt-axis .ticks { position: relative; height: 20px; font-size: 12px; font-weight: 300; color: var(--muted); }
+.gantt-axis .ticks span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+.gantt-axis .ticks span:first-child { transform: none; }
+.gantt-more { margin-top: 12px; }
+
+/* ตั้งค่าการสั่งซื้อ */
+.settings { display: flex; flex-wrap: wrap; gap: 16px 28px; align-items: flex-end; }
+.settings label { display: grid; gap: 6px; font-size: 14px; font-weight: 700; }
+.settings label span { font-weight: 300; color: var(--muted); font-size: 13px; }
+.settings input {
+  font: inherit; font-size: 16px; width: 7em; height: 48px; padding: 0 12px; border: 1px solid var(--hairline-strong);
+  background: var(--canvas); color: var(--ink); text-align: right; font-variant-numeric: tabular-nums;
+}
+.settings input:focus { outline: none; border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.formula { font-size: 14px; font-weight: 300; color: var(--body); background: var(--surface-soft); padding: 14px 18px; margin-top: 20px; line-height: 1.7; }
+.formula b { font-weight: 700; }
+
+/* ตัวเลขย่อยในการ์ด */
+.mini-kpis { display: flex; flex-wrap: wrap; border-top: 1px solid var(--hairline); border-bottom: 1px solid var(--hairline); margin-bottom: 20px; }
+.mini-kpis > div { padding: 14px 28px 14px 0; margin-right: 28px; border-right: 1px solid var(--hairline); }
+.mini-kpis > div:last-child { border-right: 0; }
+.mini-kpis b { display: block; font-size: 28px; line-height: 1.15; }
+.mini-kpis span { font-size: 14px; font-weight: 300; color: var(--muted); }
+
+.tag { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 8px; border: 1px solid var(--hairline-strong); white-space: nowrap; }
+.tag.warn { border-color: var(--serious); color: var(--ink); background: color-mix(in srgb, var(--serious) 14%, transparent); }
+.tag.info { border-color: var(--primary); background: var(--accent-soft); }
+.muted { color: var(--muted); font-weight: 300; }
+.note-line { font-size: 14px; font-weight: 300; color: var(--body); margin: 14px 0 0; }
+.drawer table.data { font-size: 14px; }
+.drawer .data th, .drawer .data td { padding: 8px 10px; }
+
+@media (max-width: 640px) {
+  .period-note { margin-left: 0; width: 100%; }
+  .gantt-row, .gantt-axis { grid-template-columns: minmax(96px, 34%) 1fr 5.5em; gap: 8px; }
+  .gantt-row .bar-value small { display: none; }
+  .actions li { grid-template-columns: 22px 1fr; }
+  .actions .go { grid-column: 2; justify-self: start; }
+  .mini-kpis > div { padding-right: 18px; margin-right: 18px; }
+  .cols { height: 160px; }
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-box" viewBox="0 0 24 24"><path d="M3 7.5l9-4.5 9 4.5v9L12 21l-9-4.5z"/><path d="M3 7.5l9 4.5 9-4.5M12 12v9"/></symbol>
+    <symbol id="i-cart" viewBox="0 0 24 24"><path d="M2.5 4h2.6l2.3 11h10.8l2.3-8H6.2"/><circle cx="9" cy="19.5" r="1.4"/><circle cx="17" cy="19.5" r="1.4"/></symbol>
+    <symbol id="i-grid" viewBox="0 0 24 24"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></symbol>
+    <symbol id="i-hourglass" viewBox="0 0 24 24"><path d="M6 3h12M6 21h12M8 3v2.5c0 3 4 4.5 4 6.5 0-2 4-3.5 4-6.5V3M8 21v-2.5c0-3 4-4.5 4-6.5 0 2 4 3.5 4 6.5V21"/></symbol>
+    <symbol id="i-clipboard" viewBox="0 0 24 24"><path d="M6 4.5h12V21H6z"/><path d="M9 3h6v3H9zM9 10.5h6M9 14h6M9 17.5h3.5"/></symbol>
+    <symbol id="i-bars" viewBox="0 0 24 24"><path d="M3 20.5h18M6 17V9M11 17V4M16 17v-6M21 17V7" transform="translate(-1 0)"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h12M9 12h12M9 18h12"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></symbol>
+    <symbol id="i-db" viewBox="0 0 24 24"><ellipse cx="12" cy="5.5" rx="8" ry="3"/><path d="M4 5.5v13c0 1.7 3.6 3 8 3s8-1.3 8-3v-13M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></symbol>
+    <symbol id="i-gauge" viewBox="0 0 24 24"><path d="M3.5 17a8.5 8.5 0 1 1 17 0"/><path d="M12 17l4-5"/><circle cx="12" cy="17" r="1.3"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/><path d="M12 8v5M12 16v.5"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></symbol>
+  </defs>
+</svg>
+
+<div class="band">
+  <svg class="band-art" viewBox="0 0 620 340" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+    <g transform="rotate(-30 470 120)"><rect x="380" y="90" width="180" height="64" rx="32"/><path d="M470 90v64"/><path d="M470 90h58a32 32 0 0 1 0 64h-58z" fill="currentColor" opacity=".35"/></g>
+    <circle cx="300" cy="80" r="34"/><path d="M276 80h48"/>
+    <g transform="rotate(25 360 250)"><rect x="300" y="230" width="120" height="42" rx="21"/><path d="M360 230v42"/></g>
+    <path d="M220 200v28M206 214h28M520 30v20M510 40h20" stroke-width="2.5"/>
+  </svg>
+  <div class="band-in">
+    <nav class="site-nav" aria-label="เมนูหลัก">
+      <a href="../dashboard01/index.html">บัญชียา &amp; ภาพรวม</a>
+      <a href="index.html" aria-current="page">สต็อก · หมดอายุ · สั่งซื้อ · การจ่ายยา</a>
+    </nav>
+    <header>
+      <div class="brand">
+        <div class="brand-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 7.5l9-4.5 9 4.5v9L12 21l-9-4.5z"/><path d="M3 7.5l9 4.5 9-4.5M12 12v9"/>
+          </svg>
+        </div>
+        <div>
+          <h1>สต็อกและการจ่ายยา</h1>
+          <p class="sub" id="asof">กำลังโหลดข้อมูล…</p>
+        </div>
+      </div>
+      <div class="switch" role="tablist" aria-label="หัวข้อ">
+        <button type="button" role="tab" data-tab="overview" aria-pressed="true">ภาพรวม</button>
+        <button type="button" role="tab" data-tab="stock" aria-pressed="false">สต็อก &amp; หมดอายุ</button>
+        <button type="button" role="tab" data-tab="order" aria-pressed="false">สั่งซื้อ</button>
+        <button type="button" role="tab" data-tab="dispense" aria-pressed="false">การจ่ายยา</button>
+        <button type="button" role="tab" data-tab="quality" aria-pressed="false">คุณภาพข้อมูล</button>
+      </div>
+    </header>
+
+    <div class="period" role="group" aria-label="ช่วงเวลาการจ่ายยา">
+      <span class="period-label">ช่วงเวลาการจ่ายยา</span>
+      <button type="button" class="chip" data-preset="7">7 วันล่าสุด</button>
+      <button type="button" class="chip" data-preset="14">14 วัน</button>
+      <button type="button" class="chip" data-preset="all">ทั้งหมด</button>
+      <button type="button" class="chip" data-preset="custom">กำหนดเอง</button>
+      <span id="custom-range" hidden>
+        <input type="date" id="d-start" aria-label="วันเริ่ม"> – <input type="date" id="d-end" aria-label="วันสิ้นสุด">
+      </span>
+      <span class="period-range" id="period-range"></span>
+      <span class="period-note" id="period-note"></span>
+    </div>
+
+    <div class="kpis" id="kpis"></div>
+  </div>
+</div>
+
+<main class="wrap">
+  <!-- ================= ภาพรวม ================= -->
+  <section data-panel="overview">
+    <div class="card full section-gap">
+      <div class="card-head"><div>
+        <h2><svg class="h-ico" aria-hidden="true"><use href="#i-check"/></svg>สิ่งที่ต้องทำ</h2>
+        <p class="desc">เรียงตามความเร่งด่วน คำนวณจากสต็อก ณ วันที่ของข้อมูล และอัตราการจ่ายในช่วงเวลาที่เลือก</p>
+      </div></div>
+      <ul class="actions" id="actions"></ul>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <div class="card-head"><div>
+          <h2><svg class="h-ico" aria-hidden="true"><use href="#i-bars"/></svg>การจ่ายยารายวัน</h2>
+          <p class="desc" id="ov-daily-desc"></p>
+        </div></div>
+        <div id="ov-daily"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div>
+          <h2><svg class="h-ico" aria-hidden="true"><use href="#i-hourglass"/></svg>ล็อตตามวันหมดอายุ</h2>
+          <p class="desc">ล็อตที่ขายได้ แบ่งตามจำนวนวันก่อนหมดอายุ · กดเพื่อดูในแท็บสต็อก</p>
+        </div></div>
+        <div class="seg" id="ov-exp-seg" role="img"></div>
+        <div class="seg-legend" id="ov-exp-legend"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= สต็อก & หมดอายุ ================= -->
+  <section data-panel="stock" hidden>
+    <div class="card full section-gap">
+      <div class="card-head"><div>
+        <h2><svg class="h-ico" aria-hidden="true"><use href="#i-hourglass"/></svg>ไทม์ไลน์ล็อต: หมดอายุเมื่อไร ใช้หมดเมื่อไร</h2>
+        <p class="desc">แถบฟ้า = ช่วงที่คาดว่าจะใช้ล็อตนี้ (ตามอัตราการจ่ายในช่วงเวลาที่เลือก หยิบล็อตที่หมดอายุก่อนก่อน) · จุด = วันหมดอายุ · แถบแดง = ส่วนที่ยังใช้ไม่หมดตอนหมดอายุ</p>
+      </div></div>
+      <div class="chips" id="tl-chips"></div>
+      <div id="gantt"></div>
+      <div class="chart-key" id="gantt-key"></div>
+    </div>
+    <div class="card full">
+      <div class="card-head"><div>
+        <h2><svg class="h-ico" aria-hidden="true"><use href="#i-list"/></svg>ล็อตทั้งหมด</h2>
+        <p class="desc">รวมล็อตที่กักไว้ ตัดทิ้ง และหมดแล้ว · กดแถวเพื่อดูรายละเอียดยา</p>
+      </div></div>
+      <div class="mini-kpis" id="lot-kpis"></div>
+      <div class="toolbar">
+        <input type="search" id="lot-q" placeholder="ค้นหาชื่อยา SKU หรือเลขล็อต" aria-label="ค้นหาล็อต">
+        <select id="lot-status" aria-label="กรองสถานะล็อต"></select>
+        <span class="count" id="lot-count"></span>
+      </div>
+      <div class="table-wrap tall"><table class="data" id="lot-table"></table></div>
+    </div>
+  </section>
+
+  <!-- ================= สั่งซื้อ ================= -->
+  <section data-panel="order" hidden>
+    <div class="card full section-gap">
+      <div class="card-head"><div>
+        <h2><svg class="h-ico" aria-hidden="true"><use href="#i-sliders"/></svg>ตั้งค่าการสั่งซื้อ</h2>
+        <p class="desc">ปรับได้ ตัวเลขทั้งแท็บจะคำนวณใหม่ทันที</p>
+      </div></div>
+      <div class="settings">
+        <label>รอของ (วัน)<span>สั่งแล้วกี่วันของมาถึง</span><input type="number" id="s-lead" min="0" max="60" value="7"></label>
+        <label>สำรองเผื่อ (วัน)<span>กันยอดจ่ายผันผวน</span><input type="number" id="s-safety" min="0" max="60" value="7"></label>
+        <label>สั่งพอใช้ (วัน)<span>แต่ละรอบสั่งให้พอใช้กี่วัน</span><input type="number" id="s-cycle" min="7" max="180" value="30"></label>
+      </div>
+      <div class="formula" id="formula"></div>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <div class="card-head"><div>
+          <h2><svg class="h-ico" aria-hidden="true"><use href="#i-clock"/></svg>พอใช้อีกกี่วัน</h2>
+          <p class="desc" id="cover-desc"></p>
+        </div></div>
+        <div class="bars" id="cover-bars" style="--val-w: 6.5em"></div>
+        <div class="chart-key" id="cover-key"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div>
+          <h2><svg class="h-ico" aria-hidden="true"><use href="#i-box"/></svg>ไม่มีการจ่ายในช่วงนี้</h2>
+          <p class="desc">ยาที่มีของแต่ไม่ถูกจ่ายเลยในช่วงเวลาที่เลือก ควรชะลอการสั่ง</p>
+        </div></div>
+        <div class="table-wrap"><table class="data" id="idle-table"></table></div>
+      </div>
+    </div>
+    <div class="card full" id="po-card">
+      <div class="card-head">
+        <div>
+          <h2><svg class="h-ico" aria-hidden="true"><use href="#i-clipboard"/></svg>ใบสั่งซื้อแนะนำ</h2>
+          <p class="desc">ยาที่คงเหลือถึงจุดสั่งซื้อแล้ว · แก้จำนวนสั่งได้ในช่อง</p>
+        </div>
+        <button type="button" class="btn" id="po-csv">⬇ ดาวน์โหลด CSV</button>
+      </div>
+      <div class="po-sum">
+        <div><div class="lbl">ค่าใช้จ่ายโดยประมาณ</div><div class="big" id="po-total"></div></div>
+        <div><div class="lbl">จำนวนรายการ</div><div class="big" id="po-count"></div></div>
+      </div>
+      <div class="table-wrap"><table class="data" id="po-table"></table></div>
+    </div>
+  </section>
+
+  <!-- ================= การจ่ายยา ================= -->
+  <section data-panel="dispense" hidden>
+    <div class="card full section-gap">
+      <div class="card-head"><div>
+        <h2><svg class="h-ico" aria-hidden="true"><use href="#i-bars"/></svg>จำนวนครั้งที่จ่ายยารายวัน</h2>
+        <p class="desc" id="daily-desc"></p>
+      </div></div>
+      <div id="daily"></div>
+      <div class="chart-key">
+        <span><i class="key-sw" style="background:var(--series-1)"></i>วันธรรมดา</span>
+        <span><i class="key-sw" style="background:var(--seq-3)"></i>เสาร์–อาทิตย์</span>
+        <span><i class="key-line" style="height:2px;width:18px;border-top:2px dashed var(--ink);background:none"></i>ค่าเฉลี่ยต่อวัน</span>
+      </div>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <div class="card-head"><div>
+          <h2><svg class="h-ico" aria-hidden="true"><use href="#i-grid"/></svg>ช่วงไหนคนมามาก</h2>
+          <p class="desc">จำนวนครั้งที่จ่าย แยกตามวันในสัปดาห์และชั่วโมง</p>
+        </div></div>
+        <div class="hm-wrap"><table class="hm" id="hm-week"></table></div>
+        <div class="hm-key" id="hm-week-key"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div>
+          <h2><svg class="h-ico" aria-hidden="true"><use href="#i-cart"/></svg>ยาที่จ่ายบ่อย 10 อันดับ</h2>
+          <p class="desc">เรียงตามจำนวนครั้ง · ตัวเลขเล็กคือจำนวนหน่วยรวม</p>
+        </div></div>
+        <div class="bars" id="top-bars" style="--val-w: 8em"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div>
+          <h2><svg class="h-ico" aria-hidden="true"><use href="#i-user"/></svg>เภสัชกร</h2>
+          <p class="desc">ปริมาณงานและประเด็นความปลอดภัยในช่วงเวลาที่เลือก</p>
+        </div></div>
+        <div class="table-wrap"><table class="data" id="rx-table"></table></div>
+      </div>
+      <div class="card" id="safety-card">
+        <div class="card-head"><div>
+          <h2><svg class="h-ico" aria-hidden="true"><use href="#i-shield"/></svg>ความปลอดภัย</h2>
+          <p class="desc">จ่ายยาจากล็อตหมดอายุ และการหยิบไม่ตามหลัก FEFO (ล็อตที่หมดอายุก่อนต้องจ่ายก่อน)</p>
+        </div></div>
+        <div id="incidents"></div>
+        <div class="bars" id="fefo-bars" style="--val-w: 5em"></div>
+        <p class="note-line" id="fefo-note"></p>
+      </div>
+    </div>
+    <div class="card full" id="log-card">
+      <div class="card-head"><div>
+        <h2><svg class="h-ico" aria-hidden="true"><use href="#i-list"/></svg>รายการจ่ายยา</h2>
+        <p class="desc">เฉพาะช่วงเวลาที่เลือก · กดแถวเพื่อดูรายละเอียดยา</p>
+      </div></div>
+      <div class="toolbar">
+        <input type="search" id="log-q" placeholder="ค้นหายา SKU ล็อต หรือรหัสผู้ป่วย" aria-label="ค้นหารายการจ่ายยา">
+        <select id="log-rx" aria-label="กรองเภสัชกร"></select>
+        <select id="log-type" aria-label="กรองชนิดรายการ">
+          <option value="">ทุกรายการ</option>
+          <option value="dispense">จ่ายยา (ใช้คำนวณ)</option>
+          <option value="fefo">หยิบไม่ตาม FEFO</option>
+          <option value="incident">มีรายงานเหตุการณ์</option>
+          <option value="void">ยกเลิก (void)</option>
+          <option value="review">ติดธงรอตรวจ</option>
+        </select>
+        <button type="button" class="link-btn" id="log-clear">ล้างตัวกรอง</button>
+        <span class="count" id="log-count"></span>
+      </div>
+      <div class="table-wrap tall"><table class="data" id="log-table"></table></div>
+    </div>
+  </section>
+
+  <!-- ================= คุณภาพข้อมูล ================= -->
+  <section data-panel="quality" hidden>
+    <div class="card full section-gap">
+      <div class="card-head"><div>
+        <h2><svg class="h-ico" aria-hidden="true"><use href="#i-shield"/></svg>แถวที่ติดธง</h2>
+        <p class="desc">needs_review = ยังไม่รู้ค่าที่ถูก ไม่นำไปคำนวณ · inferred = แก้จากหลักฐานในข้อมูล ใช้คำนวณได้แต่ควรยืนยัน</p>
+      </div></div>
+      <div class="mini-kpis" id="q-kpis"></div>
+      <div class="table-wrap"><table class="data" id="q-flags"></table></div>
+    </div>
+    <div class="card full">
+      <div class="card-head"><div>
+        <h2><svg class="h-ico" aria-hidden="true"><use href="#i-db"/></svg>บันทึกการคลีนข้อมูล</h2>
+        <p class="desc">จาก data-issues.json ที่สร้างโดย clean_fix.py</p>
+      </div></div>
+      <div class="table-wrap"><table class="data" id="q-log"></table></div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <div><h3><svg class="f-ico" aria-hidden="true"><use href="#i-db"/></svg>ที่มาของข้อมูล</h3><p>ต้นฉบับคือ drugs.json, stock.json, dispense-log.json และ data-issues.json ในโฟลเดอร์นี้ (เปิดไฟล์ตรงจะอ่านจาก data.js ที่สร้างจากไฟล์เหล่านี้) เป็นข้อมูลจำลองเพื่อการเรียน</p></div>
+    <div><h3><svg class="f-ico" aria-hidden="true"><use href="#i-clock"/></svg>ช่วงเวลา</h3><p>ตัวกรองช่วงเวลาใช้กับข้อมูลการจ่ายยาและอัตราการใช้ ส่วนสต็อกและวันหมดอายุคิด ณ วันที่ของข้อมูลเสมอ</p></div>
+    <div><h3><svg class="f-ico" aria-hidden="true"><use href="#i-gauge"/></svg>สิ่งที่ไม่นับ</h3><p>รายการ void และแถวที่ติดธง needs_review ไม่นำมาคำนวณ ล็อตที่กักไว้หรือตัดทิ้งไม่นับเป็นของที่ขายได้</p></div>
+  </div>
+</footer>
+
+<div class="overlay" id="overlay" hidden></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="dr-title" hidden>
+  <button type="button" class="drawer-close" id="dr-close" aria-label="ปิด">×</button>
+  <div id="dr-body"></div>
+</aside>
+<div id="tip" role="tooltip"></div>
+
+<script src="data.js"></script>
+<script src="../shared/pharma-data.js"></script>
+<script>
+PharmaData.load('./', {
+  drugs: 'drugs.json', stock: 'stock.json', log: 'dispense-log.json', issues: 'data-issues.json?'
+}).then(function (RAW) {
+  'use strict';
+  const DAY = 86400000;
+
+  // ================= ตัวช่วย =================
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const nf = new Intl.NumberFormat('th-TH');
+  const fmt = (n) => nf.format(Math.round(n));
+  const fmt1 = (n) => n.toLocaleString('th-TH', { maximumFractionDigits: 1 });
+  const baht = (n) => '฿' + fmt(n);
+  const bahtC = (n) => n >= 1e6 ? '฿' + (n / 1e6).toFixed(2) + 'M' : n >= 1e4 ? '฿' + (n / 1e3).toFixed(1) + 'K' : baht(n);
+  const money = (n) => n.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const D = (iso) => new Date(iso.slice(0, 10) + 'T00:00:00');
+  const iso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const addDays = (d, n) => new Date(d.getTime() + n * DAY);
+  const diffDays = (a, b) => Math.round((b - a) / DAY);
+  const thShort = (d) => d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' });
+  const thDM = (d) => d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
+  const thLong = (d) => d.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
+  const sstr = (s) => String(s).split(',')[0];
+  const svgUse = (id, cls = 'ico') => `<svg class="${cls}" style="fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round" aria-hidden="true"><use href="#${id}"/></svg>`;
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem('rx02-' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem('rx02-' + k, JSON.stringify(v)); } catch (e) {} }
+  };
+
+  const UNIT_TH = { tablet: 'เม็ด', capsule: 'แคปซูล', bottle: 'ขวด', tube: 'หลอด', inhaler: 'หลอดพ่น', sachet: 'ซอง', pack: 'แผง', suppository: 'แท่ง', nebule: 'หลอด' };
+  const unit = (d) => UNIT_TH[d.unit] || d.unit;
+  const ICO = {
+    critical: '<svg class="ico" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="6" fill="var(--critical)"/><path d="M3.8 3.8l4.4 4.4M8.2 3.8L3.8 8.2" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg>',
+    serious: '<svg class="ico" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 .6l5.6 10.2H.4z" fill="var(--serious)"/><path d="M6 4.2v3" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/><circle cx="6" cy="9.1" r=".8" fill="#fff"/></svg>',
+    warning: '<svg class="ico" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="6" fill="var(--warning)"/><path d="M6 3v3.6" stroke="#0b0b0b" stroke-width="1.6" stroke-linecap="round"/><circle cx="6" cy="8.8" r=".9" fill="#0b0b0b"/></svg>',
+    good: '<svg class="ico" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="6" fill="var(--good)"/><path d="M3.3 6.2l1.8 1.8 3.6-3.8" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    info: '<svg class="ico" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="6" fill="var(--primary)"/><path d="M6 5.2v3.6" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><circle cx="6" cy="3.4" r=".9" fill="#fff"/></svg>'
+  };
+
+  // ================= ข้อมูล =================
+  const drugs = Object.fromEntries(RAW.drugs.items.map(d => [d.sku, d]));
+  const AS_OF = D(RAW.stock.meta.as_of);
+  const isFlagged = (r) => r.review && r.review.status === 'needs_review';
+
+  const lots = RAW.stock.items.map(l => {
+    const x = Object.assign({}, l);
+    x.drug = drugs[l.sku] || { sku: l.sku, generic_name: l.sku, strength: '', unit: 'tablet', category: '–', reorder_level: 0 };
+    x.expD = l.expiry ? D(l.expiry) : null;
+    x.recD = D(l.received_date);
+    x.days = x.expD ? diffDays(AS_OF, x.expD) : null;
+    x.sellable = l.status === 'active' && l.qty_on_hand > 0;
+    x.value = l.qty_on_hand * l.unit_cost;
+    return x;
+  });
+  const lotKey = (sku, lot) => sku + '|' + lot;
+  const lotBy = Object.fromEntries(lots.map(l => [lotKey(l.sku, l.lot), l]));
+
+  const log = RAW.log.items.map(r => {
+    const x = Object.assign({}, r);
+    x.dt = new Date(r.datetime);
+    x.day = iso(x.dt);
+    x.drug = drugs[r.sku];
+    x.lotRow = lotBy[lotKey(r.sku, r.lot)];
+    x.valid = r.type === 'dispense' && !isFlagged(r) && Number.isInteger(r.qty) && r.qty > 0;
+    return x;
+  });
+  // FEFO: มีล็อตอื่นของยาเดียวกันที่รับเข้าแล้ว ยังไม่หมดอายุ หมดอายุเร็วกว่า และยังมีของ แต่ไปหยิบล็อตนี้
+  log.forEach(r => {
+    r.fefoAlt = [];
+    if (!r.valid || !r.lotRow || !r.lotRow.expD) return;
+    const d = D(r.day);
+    r.fefoAlt = lots.filter(l => l.sku === r.sku && l.lot !== r.lot && l.expD && !isFlagged(l)
+      && l.recD <= d && l.expD >= d && l.expD < r.lotRow.expD
+      && (l.qty_on_hand > 0 || (l.written_off_qty || 0) > 0)).map(l => l.lot);
+    r.expiredLot = r.lotRow.expD < d;
+  });
+  const validDays = log.filter(r => r.valid).map(r => r.day).sort();
+  const LOG_START = D(validDays[0]);
+  const LOG_END = D(validDays[validDays.length - 1]);
+  const skusWithStock = [...new Set(lots.map(l => l.sku))];
+
+  // ================= สถานะ =================
+  const state = {
+    tab: store.get('tab', 'overview'),
+    preset: store.get('preset', 'all'),
+    start: null, end: null,
+    lead: store.get('lead', 7), safety: store.get('safety', 7), cycle: store.get('cycle', 30),
+    tlFilter: 'risk', tlAll: false,
+    poQty: {}, poEdited: {}
+  };
+  function setPreset(p, s, e) {
+    state.preset = p;
+    if (p === 'all') { state.start = LOG_START; state.end = LOG_END; }
+    else if (p === 'custom') {
+      state.start = s || state.start || LOG_START; state.end = e || state.end || LOG_END;
+      if (state.start > state.end) [state.start, state.end] = [state.end, state.start];
+    } else {
+      state.end = LOG_END; state.start = new Date(Math.max(LOG_START, addDays(LOG_END, -(Number(p) - 1))));
+    }
+    store.set('preset', p);
+  }
+
+  // ================= คำนวณตามช่วงเวลา =================
+  let M = null;
+  function compute() {
+    const s = state.start, e = state.end;
+    const days = diffDays(s, e) + 1;
+    const inRange = log.filter(r => D(r.day) >= s && D(r.day) <= e);
+    const valid = inRange.filter(r => r.valid);
+    const used = {};
+    valid.forEach(r => used[r.sku] = (used[r.sku] || 0) + r.qty);
+
+    // รายยา
+    const sku = {};
+    skusWithStock.forEach(k => {
+      const d = drugs[k];
+      const ls = lots.filter(l => l.sku === k);
+      const sell = ls.filter(l => l.sellable).sort((a, b) => (a.expD || Infinity) - (b.expD || Infinity));
+      const onHand = sell.reduce((t, l) => t + l.qty_on_hand, 0);
+      const rate = (used[k] || 0) / days;
+      const rop = Math.max(d ? d.reorder_level : 0, Math.ceil(rate * (state.lead + state.safety)));
+      const cover = rate > 0 ? onHand / rate : Infinity;
+      const latest = ls.slice().sort((a, b) => b.recD - a.recD)[0];
+      const cost = latest ? latest.unit_cost : 0;
+      const need = onHand <= rop;
+      const step = d && (d.unit === 'tablet' || d.unit === 'capsule') ? 10 : 1;
+      const target = rop + Math.ceil(rate * state.cycle);
+      const suggest = need ? Math.max(step, Math.ceil(Math.max(0, target - onHand) / step) * step) : 0;
+      // FEFO: คาดการณ์ว่าแต่ละล็อตจะใช้เมื่อไร และเหลือเท่าไรตอนหมดอายุ
+      let cum = 0;
+      sell.forEach(l => {
+        l.useStart = rate > 0 ? cum / rate : Infinity;
+        l.useEnd = rate > 0 ? (cum + l.qty_on_hand) / rate : Infinity;
+        const usable = rate > 0 && l.days != null ? Math.max(0, Math.min(l.qty_on_hand, rate * l.days - cum)) : 0;
+        l.atRisk = l.days == null ? 0 : Math.round(l.qty_on_hand - usable);
+        l.atRiskValue = l.atRisk * l.unit_cost;
+        cum += l.qty_on_hand;
+      });
+      sku[k] = { sku: k, drug: d, lots: ls, sell, onHand, used: used[k] || 0, rate, rop, cover, cost, need, suggest, target,
+        value: sell.reduce((t, l) => t + l.value, 0) };
+    });
+    Object.values(sku).forEach(x => {
+      if (!state.poEdited[x.sku]) state.poQty[x.sku] = x.suggest;
+    });
+
+    const fefo = valid.filter(r => r.fefoAlt.length);
+    const incidents = inRange.filter(r => r.incident_ref);
+    M = { days, inRange, valid, sku, fefo, incidents };
+  }
+
+  const urgency = (x) => x.onHand === 0 ? 'critical' : x.cover <= state.lead ? 'critical' : x.need ? 'serious' : x.cover <= state.lead + state.safety + 14 ? 'warning' : 'good';
+  const URG_LABEL = { critical: 'ต้องสั่งด่วน', serious: 'ถึงจุดสั่งซื้อ', warning: 'เฝ้าดู', good: 'พอใช้' };
+  const BUCKETS = [
+    { key: 'b30', max: 30, label: 'ภายใน 30 วัน', color: 'var(--critical)', ico: 'critical' },
+    { key: 'b60', max: 60, label: '31–60 วัน', color: 'var(--serious)', ico: 'serious' },
+    { key: 'b90', max: 90, label: '61–90 วัน', color: 'var(--warning)', ico: 'warning', dark: true },
+    { key: 'b180', max: 180, label: '91–180 วัน', color: 'var(--seq-3)', dark: true },
+    { key: 'bmax', max: Infinity, label: 'มากกว่า 180 วัน', color: 'var(--good)' }
+  ];
+  const bucketOf = (days) => BUCKETS.find(b => days <= b.max);
+
+  // ================= ส่วนประกอบ =================
+  function barChart(el, rows, opts = {}) {
+    const max = opts.max || Math.max(...rows.map(r => r.value), 1);
+    el.innerHTML = rows.length ? rows.map(r => {
+      const w = Math.min(r.value / max, 1) * 100;
+      const ref = opts.ref != null ? `<span class="ref-line" style="left:calc(${Math.min(opts.ref / max, 1) * 100}% - 1px)"></span>` : '';
+      return `<div class="bar-row clickable" tabindex="0" role="button" data-sku="${esc(r.sku)}" data-tip="${esc(r.tip)}">
+        <span class="bar-label" title="${esc(r.plain)}">${r.label}</span>
+        <span class="bar-track">${w > 0 ? `<span class="bar-fill" style="width:${w}%;${r.color ? 'background:' + r.color : ''}"></span>` : ''}${ref}</span>
+        <span class="bar-value">${r.display}</span></div>`;
+    }).join('') : `<p class="muted">ไม่มีข้อมูลในช่วงนี้</p>`;
+  }
+  function segBar(segEl, legEl, parts, onClick) {
+    const total = parts.reduce((t, p) => t + p.n, 0) || 1;
+    segEl.innerHTML = parts.filter(p => p.n > 0).map(p =>
+      `<div class="seg-part${p.dark ? ' dark-text' : ''}" style="flex:${p.n} 1 0;background:${p.color}"
+        data-tip="<b>${esc(p.label)}</b><br>${p.n} ล็อต · ${baht(p.value || 0)}">${p.n}</div>`).join('');
+    segEl.setAttribute('aria-label', parts.map(p => `${p.label} ${p.n} ล็อต`).join(', '));
+    legEl.innerHTML = parts.map(p => `<button type="button" data-bucket="${p.key}">
+      ${p.ico ? ICO[p.ico] : `<i class="key-sw" style="background:${p.color}"></i>`}<span class="lg-name">${esc(p.label)}</span>
+      <span class="lg-num">${p.n}<small>${bahtC(p.value || 0)}</small></span></button>`).join('');
+    segEl.querySelectorAll('.seg-part').forEach(x => { if (x.clientWidth < 28) x.style.color = 'transparent'; });
+  }
+  function dailyChart(el) {
+    const days = [];
+    for (let d = new Date(state.start); d <= state.end; d = addDays(d, 1)) days.push(iso(d));
+    const count = {}, units = {};
+    M.valid.forEach(r => { count[r.day] = (count[r.day] || 0) + 1; units[r.day] = (units[r.day] || 0) + r.qty; });
+    const max = Math.max(...days.map(d => count[d] || 0), 1);
+    const avg = M.valid.length / days.length;
+    const every = days.length > 20 ? 5 : days.length > 10 ? 2 : 1;
+    el.innerHTML = `<div class="cols" role="img" aria-label="จำนวนครั้งที่จ่ายยารายวัน เฉลี่ย ${fmt1(avg)} ครั้งต่อวัน">
+      ${days.map(d => {
+        const dt = D(d), n = count[d] || 0, we = dt.getDay() === 0 || dt.getDay() === 6;
+        return `<div class="col${we ? ' weekend' : ''}" data-tip="<b>${dt.toLocaleDateString('th-TH', { weekday: 'long', day: 'numeric', month: 'short' })}</b><br>${n} ครั้ง · ${fmt(units[d] || 0)} หน่วย">
+          <i style="height:${n / max * 100}%"></i></div>`;
+      }).join('')}
+      <div class="avg" style="bottom:${avg / max * 100}%"><span>เฉลี่ย ${fmt1(avg)}</span></div>
+    </div>
+    <div class="cols-axis">${days.map((d, i) => `<span>${i % every === 0 ? D(d).getDate() : ''}</span>`).join('')}</div>`;
+    return avg;
+  }
+
+  // ================= KPI ในแถบหัว =================
+  function renderKpis() {
+    const need = Object.values(M.sku).filter(x => x.need);
+    const poCost = need.reduce((t, x) => t + (state.poQty[x.sku] || 0) * x.cost, 0);
+    const exp90 = lots.filter(l => l.sellable && l.days != null && l.days <= 90);
+    const risk = lots.filter(l => l.sellable && l.atRisk > 0);
+    const riskVal = risk.reduce((t, l) => t + l.atRiskValue, 0);
+    const units = M.valid.reduce((t, r) => t + r.qty, 0);
+    const safety = M.incidents.length + M.fefo.length;
+    const k = (o) => `<button type="button" class="kpi" data-goto="${o.tab}"${o.target ? ` data-target="${o.target}"` : ''}>
+      <span class="kpi-label">${o.icon || ''}${o.label}</span><span class="kpi-value">${o.value}</span><span class="kpi-note">${o.note}</span></button>`;
+    $('kpis').innerHTML = [
+      { tab: 'order', target: 'po-card', icon: ICO.serious, label: 'ต้องสั่งซื้อ', value: need.length, note: `ประมาณ ${bahtC(poCost)}` },
+      { tab: 'stock', icon: ICO.warning, label: 'หมดอายุใน 90 วัน', value: exp90.length, note: `${exp90.length} ล็อต · ${bahtC(exp90.reduce((t, l) => t + l.value, 0))}` },
+      { tab: 'stock', icon: ICO.critical, label: 'เสี่ยงทิ้งเพราะหมดอายุ', value: bahtC(riskVal), note: `${risk.length} ล็อตคาดว่าใช้ไม่ทัน` },
+      { tab: 'dispense', label: 'การจ่ายยาในช่วงนี้', value: fmt(M.valid.length), note: `เฉลี่ย ${fmt1(M.valid.length / M.days)} ครั้ง/วัน · ${fmt(units)} หน่วย` },
+      { tab: 'dispense', target: 'safety-card', icon: safety ? ICO.critical : ICO.good, label: 'ประเด็นความปลอดภัย', value: safety, note: `จ่ายยาหมดอายุ ${M.incidents.length} · ไม่ตาม FEFO ${M.fefo.length}` }
+    ].map(k).join('');
+  }
+
+  // ================= ภาพรวม =================
+  function renderOverview() {
+    const acts = [];
+    Object.values(M.sku).filter(x => x.need).sort((a, b) => a.cover - b.cover).forEach(x => {
+      const u = urgency(x);
+      acts.push({ p: u === 'critical' ? 0 : 1, ico: ICO[u], sku: x.sku,
+        title: `สั่ง ${x.drug.generic_name} ${sstr(x.drug.strength)} ${fmt(state.poQty[x.sku])} ${unit(x.drug)}`,
+        sub: `คงเหลือ ${fmt(x.onHand)} ${unit(x.drug)} · ${x.rate > 0 ? `พอใช้อีก ${fmt(x.cover)} วัน` : 'ไม่มีการจ่ายในช่วงนี้'} · จุดสั่งซื้อ ${fmt(x.rop)}`,
+        go: 'order' });
+    });
+    lots.filter(l => l.sellable && l.days != null && l.days <= 60).sort((a, b) => a.days - b.days).forEach(l => acts.push({
+      p: l.days <= 30 ? 0 : 2, ico: ICO[bucketOf(l.days).ico || 'warning'], sku: l.sku,
+      title: `จ่าย ${l.drug.generic_name} ล็อต ${l.lot} ก่อน`,
+      sub: `หมดอายุ ${thShort(l.expD)} (อีก ${l.days} วัน) · เหลือ ${fmt(l.qty_on_hand)} ${unit(l.drug)}${l.atRisk > 0 ? ` · คาดว่าใช้ไม่ทัน ${fmt(l.atRisk)}` : ''}`,
+      go: 'stock' }));
+    lots.filter(l => l.sellable && l.atRisk > 0 && l.days > 60).sort((a, b) => b.atRiskValue - a.atRiskValue).slice(0, 3).forEach(l => acts.push({
+      p: 3, ico: ICO.warning, sku: l.sku,
+      title: `${l.drug.generic_name} ล็อต ${l.lot}: เสี่ยงใช้ไม่ทันก่อนหมดอายุ`,
+      sub: `คาดว่าเหลือ ${fmt(l.atRisk)} ${unit(l.drug)} (${baht(l.atRiskValue)}) ตอนหมดอายุ ${thShort(l.expD)} · ควรชะลอการสั่งหรือหาทางระบาย`,
+      go: 'stock' }));
+    const q = lots.filter(l => l.status === 'quarantine');
+    if (q.length) acts.push({ p: 2, ico: ICO.serious, title: `ตรวจล็อตที่กักไว้ ${q.length} ล็อต`,
+      sub: q.map(l => `${l.drug.generic_name} ${l.lot}`).join(' · '), go: 'quality' });
+    const flagged = log.filter(isFlagged).length + lots.filter(isFlagged).length;
+    if (flagged) acts.push({ p: 4, ico: ICO.info, title: `ตรวจข้อมูลที่ติดธง ${flagged} แถว`, sub: 'แถวเหล่านี้ไม่ถูกนำมาคำนวณจนกว่าจะแก้', go: 'quality' });
+    if (M.fefo.length) acts.push({ p: 2, ico: ICO.serious, title: `หยิบยาไม่ตาม FEFO ${M.fefo.length} ครั้งในช่วงนี้`,
+      sub: 'มีล็อตที่หมดอายุเร็วกว่าอยู่แต่หยิบล็อตใหม่ ล็อตเก่าจะค้างจนหมดอายุ', go: 'dispense', target: 'safety-card' });
+    acts.sort((a, b) => a.p - b.p);
+    $('actions').innerHTML = acts.length ? acts.slice(0, 10).map(a => `<li>
+      ${a.ico}<div><div class="a-title">${esc(a.title)}</div><div class="a-sub">${esc(a.sub)}</div></div>
+      <div>${a.sku ? `<button type="button" class="go" data-sku="${esc(a.sku)}">รายละเอียด</button> ` : ''}<button type="button" class="go" data-goto="${a.go}"${a.target ? ` data-target="${a.target}"` : ''}>ไปที่แท็บ ›</button></div></li>`).join('')
+      : `<li>${ICO.good}<div><div class="a-title">ไม่มีสิ่งที่ต้องทำเร่งด่วน</div></div></li>`;
+
+    const avg = dailyChart($('ov-daily'));
+    $('ov-daily-desc').textContent = `${fmt(M.valid.length)} ครั้งใน ${M.days} วัน · เฉลี่ย ${fmt1(avg)} ครั้งต่อวัน`;
+    const parts = BUCKETS.map(b => {
+      const ls = lots.filter(l => l.sellable && l.days != null && bucketOf(l.days) === b);
+      return Object.assign({}, b, { n: ls.length, value: ls.reduce((t, l) => t + l.value, 0) });
+    });
+    segBar($('ov-exp-seg'), $('ov-exp-legend'), parts);
+  }
+
+  // ================= สต็อก & หมดอายุ =================
+  function renderStock() {
+    const sell = lots.filter(l => l.sellable && l.expD);
+    const filters = [
+      { key: 'risk', label: 'เสี่ยงใช้ไม่ทัน', test: l => l.atRisk > 0 },
+      { key: 'b90', label: 'หมดอายุใน 90 วัน', test: l => l.days <= 90 },
+      { key: 'b180', label: 'ใน 180 วัน', test: l => l.days <= 180 },
+      { key: 'all', label: 'ทุกล็อตที่ขายได้', test: () => true }
+    ];
+    $('tl-chips').innerHTML = filters.map(f => `<button type="button" data-tl="${f.key}" aria-pressed="${state.tlFilter === f.key}">
+      ${esc(f.label)} <small>${sell.filter(f.test).length}</small></button>`).join('');
+    const f = filters.find(x => x.key === state.tlFilter) || filters[0];
+    const rows = sell.filter(f.test).sort((a, b) => a.expD - b.expD);
+    const horizon = Math.max(365, Math.ceil(Math.max(...sell.map(l => l.days)) / 90) * 90);
+    const pct = (d) => Math.max(0, Math.min(d / horizon, 1)) * 100;
+    const ticks = [0, 90, 180, 365, 540, 730, 900].filter(t => t <= horizon);
+    const tickHtml = ticks.map(t => `<span class="tick" style="left:${pct(t)}%"></span>`).join('');
+    const shown = state.tlAll ? rows : rows.slice(0, 15);
+    $('gantt').innerHTML = (shown.length ? shown.map(l => {
+      const b = bucketOf(l.days);
+      const end = Math.min(l.useEnd, horizon), start = Math.min(l.useStart, horizon);
+      const useEnd = Math.min(end, l.days);
+      const use = l.useStart < l.days && isFinite(l.useStart) ? `<span class="use" style="left:${pct(start)}%;width:${pct(useEnd) - pct(start)}%"></span>` : '';
+      const waste = l.atRisk > 0 ? `<span class="waste" style="left:${pct(l.days)}%;width:${Math.max(pct(isFinite(l.useEnd) ? Math.min(l.useEnd, horizon) : horizon) - pct(l.days), 1.2)}%"></span>` : '';
+      const rate = M.sku[l.sku].rate;
+      const tip = `<b>${esc(l.drug.generic_name)} ${esc(sstr(l.drug.strength))} · ล็อต ${esc(l.lot)}</b><br>คงเหลือ ${fmt(l.qty_on_hand)} ${unit(l.drug)} · หมดอายุ ${thLong(l.expD)} (อีก ${l.days} วัน)<br>`
+        + (rate > 0 ? `คาดว่าใช้หมดราว ${isFinite(l.useEnd) ? thShort(addDays(AS_OF, Math.round(l.useEnd))) : '–'} (จ่ายเฉลี่ย ${fmt1(rate)}/วัน)` : 'ไม่มีการจ่ายในช่วงเวลาที่เลือก')
+        + (l.atRisk > 0 ? `<br><b>คาดว่าเหลือ ${fmt(l.atRisk)} ${unit(l.drug)} (${baht(l.atRiskValue)}) ตอนหมดอายุ</b>` : '');
+      return `<div class="gantt-row" tabindex="0" role="button" data-sku="${esc(l.sku)}" data-tip="${esc(tip)}">
+        <span class="bar-label">${esc(l.drug.generic_name)} <small>${esc(l.lot)}</small></span>
+        <span class="gantt-track">${tickHtml}${use}${waste}<span class="exp" style="left:${pct(l.days)}%;background:${b.color}"></span></span>
+        <span class="bar-value">${l.atRisk > 0 ? `${fmt(l.atRisk)}<small> เหลือทิ้ง</small>` : `${l.days}<small> วัน</small>`}</span></div>`;
+    }).join('') : `<p class="muted">ไม่มีล็อตในกลุ่มนี้</p>`)
+      + `<div class="gantt-axis"><span></span><span class="ticks">${ticks.map(t => `<span style="left:${pct(t)}%">${t === 0 ? 'วันนี้' : thDM(addDays(AS_OF, t)) + ' ' + String(addDays(AS_OF, t).getFullYear() + 543).slice(2)}</span>`).join('')}</span><span></span></div>`
+      + (rows.length > 15 ? `<div class="gantt-more"><button type="button" class="link-btn" id="tl-more">${state.tlAll ? 'แสดงน้อยลง' : `แสดงทั้งหมด ${rows.length} ล็อต`}</button></div>` : '');
+    $('gantt-key').innerHTML = `<span><i class="key-sw" style="background:var(--seq-2)"></i>ช่วงที่คาดว่าจะใช้</span>
+      <span><i class="key-sw" style="background:color-mix(in srgb, var(--critical) 55%, transparent)"></i>ใช้ไม่ทันก่อนหมดอายุ</span>`
+      + BUCKETS.map(b => `<span><i class="key-sw" style="background:${b.color};border-radius:50%"></i>${b.label}</span>`).join('');
+
+    // ตารางล็อต
+    const st = { active: 'ขายได้', quarantine: 'กักไว้', written_off: 'ตัดทิ้ง', depleted: 'หมดแล้ว' };
+    const k = (lbl, v) => `<div><b>${v}</b><span>${lbl}</span></div>`;
+    const sellAll = lots.filter(l => l.sellable);
+    $('lot-kpis').innerHTML = k('มูลค่าที่ขายได้', baht(sellAll.reduce((t, l) => t + l.value, 0)))
+      + k('ล็อตที่ขายได้', sellAll.length)
+      + k('กักไว้', `${lots.filter(l => l.status === 'quarantine').length} ล็อต`)
+      + k('ตัดทิ้ง', `${lots.filter(l => l.status === 'written_off').length} ล็อต`)
+      + k('ยาที่มีข้อมูลสต็อก', `${skusWithStock.length} จาก ${Object.keys(drugs).length}`);
+    if (!$('lot-status').options.length) {
+      $('lot-status').innerHTML = '<option value="">ทุกสถานะ</option>' + Object.entries(st).map(([v, t]) => `<option value="${v}">${t}</option>`).join('');
+    }
+    const q = $('lot-q').value.trim().toLowerCase(), fs = $('lot-status').value;
+    const lr = lots.filter(l => (!fs || l.status === fs) && (!q || [l.sku, l.lot, l.drug.generic_name].some(v => v.toLowerCase().includes(q))))
+      .sort((a, b) => (a.status === 'active' ? 0 : 1) - (b.status === 'active' ? 0 : 1) || (a.expD || Infinity) - (b.expD || Infinity));
+    $('lot-table').innerHTML = `<thead><tr><th>ยา</th><th>ล็อต</th><th>สถานะ</th><th class="num">คงเหลือ</th><th>รับเข้า</th><th>หมดอายุ</th>
+      <th class="num">เหลือ (วัน)</th><th class="num">คาดว่าเหลือทิ้ง</th><th class="num">มูลค่า</th></tr></thead><tbody>${lr.map(l => {
+        const b = l.days != null ? bucketOf(l.days) : null;
+        return `<tr class="clickable" data-sku="${esc(l.sku)}" tabindex="0">
+        <td><span class="name">${esc(l.drug.generic_name)}</span> ${esc(sstr(l.drug.strength))}<br><span class="sku">${esc(l.sku)}</span></td>
+        <td>${esc(l.lot)}</td>
+        <td><span class="badge">${l.status === 'active' ? ICO.good : l.status === 'quarantine' ? ICO.serious : l.status === 'written_off' ? ICO.critical : ICO.info}${st[l.status] || l.status}</span>${isFlagged(l) ? ' <span class="tag warn">รอตรวจ</span>' : ''}</td>
+        <td class="num">${fmt(l.qty_on_hand)} ${unit(l.drug)}${l.written_off_qty ? `<br><span class="sku">ตัดทิ้ง ${l.written_off_qty}</span>` : ''}</td>
+        <td>${thShort(l.recD)}</td>
+        <td>${l.expD ? thShort(l.expD) : '<span class="tag warn">ไม่มีข้อมูล</span>'}</td>
+        <td class="num">${l.days == null ? '–' : l.days < 0 ? 'หมดแล้ว' : `${b.ico ? ICO[b.ico] + ' ' : ''}${l.days}`}</td>
+        <td class="num">${l.sellable && l.atRisk > 0 ? `${fmt(l.atRisk)} (${baht(l.atRiskValue)})` : '–'}</td>
+        <td class="num">${baht(l.value)}</td></tr>`;
+      }).join('')}</tbody>`;
+    $('lot-count').textContent = `แสดง ${lr.length} จาก ${lots.length} ล็อต`;
+  }
+
+  // ================= สั่งซื้อ =================
+  function renderOrder() {
+    $('s-lead').value = state.lead; $('s-safety').value = state.safety; $('s-cycle').value = state.cycle;
+    $('formula').innerHTML = `อัตราการจ่าย = หน่วยที่จ่ายในช่วงเวลาที่เลือก ÷ ${M.days} วัน<br>
+      <b>จุดสั่งซื้อ</b> = ค่าที่มากกว่าระหว่าง จุดสั่งซื้อในบัญชียา กับ อัตราการจ่าย × (รอของ ${state.lead} + สำรอง ${state.safety} วัน)<br>
+      <b>สั่งเมื่อ</b> คงเหลือที่ขายได้ ≤ จุดสั่งซื้อ · <b>จำนวนสั่ง</b> = จุดสั่งซื้อ + อัตราการจ่าย × ${state.cycle} วัน − คงเหลือ (ยาเม็ดและแคปซูลปัดขึ้นทีละ 10)`;
+
+    const xs = Object.values(M.sku);
+    const moving = xs.filter(x => x.rate > 0).sort((a, b) => a.cover - b.cover);
+    const MAXC = 120, line = state.lead + state.safety;
+    $('cover-desc').textContent = `${moving.length} ยาที่มีการจ่าย · เส้นตั้ง = รอของ + สำรอง (${line} วัน) · สเกลสูงสุด ${MAXC} วัน`;
+    barChart($('cover-bars'), moving.map(x => {
+      const u = urgency(x);
+      return {
+        sku: x.sku, plain: `${x.drug.generic_name} ${x.drug.strength}`,
+        label: `${esc(x.drug.generic_name)} <small>${esc(sstr(x.drug.strength))}</small>`,
+        value: Math.min(x.cover, MAXC),
+        color: u === 'critical' ? 'var(--critical)' : u === 'serious' ? 'var(--serious)' : u === 'warning' ? 'var(--warning)' : 'var(--series-1)',
+        display: `${u === 'critical' || u === 'serious' ? ICO[u] + ' ' : ''}${x.cover > 999 ? '>999' : fmt(x.cover)}<small> วัน</small>`,
+        tip: `<b>${esc(x.drug.generic_name)} ${esc(x.drug.strength)}</b><br>คงเหลือ ${fmt(x.onHand)} ${unit(x.drug)} · จ่ายเฉลี่ย ${fmt1(x.rate)}/วัน<br>พอใช้อีก ${fmt(x.cover)} วัน · ${URG_LABEL[u]}`
+      };
+    }), { max: MAXC, ref: line });
+    $('cover-key').innerHTML = ['critical', 'serious', 'warning', 'good'].map(u =>
+      `<span><i class="key-sw" style="background:${u === 'good' ? 'var(--series-1)' : `var(--${u})`}"></i>${URG_LABEL[u]}</span>`).join('')
+      + `<span><i class="key-line"></i>รอของ + สำรอง</span>`;
+
+    const idle = xs.filter(x => x.rate === 0 && x.onHand > 0).sort((a, b) => b.value - a.value);
+    $('idle-table').innerHTML = idle.length ? `<thead><tr><th>ยา</th><th class="num">คงเหลือ</th><th class="num">มูลค่า</th><th>หมดอายุเร็วสุด</th></tr></thead><tbody>${idle.map(x => {
+      const first = x.sell[0];
+      return `<tr class="clickable" data-sku="${esc(x.sku)}" tabindex="0"><td><span class="name">${esc(x.drug.generic_name)}</span> ${esc(sstr(x.drug.strength))}</td>
+      <td class="num">${fmt(x.onHand)} ${unit(x.drug)}</td><td class="num">${baht(x.value)}</td>
+      <td>${first && first.expD ? `${first.days <= 90 ? ICO.warning + ' ' : ''}${thShort(first.expD)}` : '–'}</td></tr>`;
+    }).join('')}</tbody>` : `<tbody><tr><td class="empty">ทุกยาที่มีของถูกจ่ายในช่วงนี้</td></tr></tbody>`;
+
+    const po = xs.filter(x => x.need).sort((a, b) => a.cover - b.cover);
+    $('po-table').innerHTML = `<thead><tr><th>ยา</th><th>ความเร่งด่วน</th><th class="num">คงเหลือ</th><th class="num">จ่าย/วัน</th><th class="num">พอใช้</th>
+      <th class="num">จุดสั่งซื้อ</th><th class="num">จำนวนสั่ง</th><th class="num">ต้นทุน/หน่วย</th><th class="num">รวม</th></tr></thead>
+      <tbody>${po.length ? po.map(x => {
+        const u = urgency(x);
+        return `<tr><td><a href="#" class="name" data-sku="${esc(x.sku)}" style="color:inherit">${esc(x.drug.generic_name)}</a> ${esc(sstr(x.drug.strength))}<br><span class="sku">${esc(x.sku)}</span></td>
+        <td><span class="badge">${ICO[u]}${URG_LABEL[u]}</span></td>
+        <td class="num">${fmt(x.onHand)} ${unit(x.drug)}</td><td class="num">${fmt1(x.rate)}</td>
+        <td class="num">${x.rate > 0 ? fmt(x.cover) + ' วัน' : '–'}</td><td class="num">${fmt(x.rop)}</td>
+        <td class="num"><input class="po-qty" type="number" min="0" step="1" value="${state.poQty[x.sku]}" data-po="${esc(x.sku)}" aria-label="จำนวนสั่ง ${esc(x.drug.generic_name)}"></td>
+        <td class="num">${money(x.cost)}</td><td class="num" data-line="${esc(x.sku)}"></td></tr>`;
+      }).join('') : `<tr><td class="empty" colspan="9">ยังไม่มียาที่ถึงจุดสั่งซื้อ</td></tr>`}</tbody>
+      <tfoot><tr><td colspan="8">รวมทั้งหมด</td><td class="num" id="po-foot"></td></tr></tfoot>`;
+    updatePO();
+  }
+  function updatePO() {
+    const po = Object.values(M.sku).filter(x => x.need);
+    let total = 0, n = 0;
+    po.forEach(x => {
+      const line = (state.poQty[x.sku] || 0) * x.cost;
+      total += line; if (state.poQty[x.sku] > 0) n++;
+      const c = document.querySelector(`[data-line="${CSS.escape(x.sku)}"]`);
+      if (c) c.textContent = baht(line);
+    });
+    $('po-foot').textContent = baht(total);
+    $('po-total').textContent = baht(total);
+    $('po-count').textContent = n + ' รายการ';
+  }
+
+  // ================= การจ่ายยา =================
+  function renderDispense() {
+    const avg = dailyChart($('daily'));
+    const units = M.valid.reduce((t, r) => t + r.qty, 0);
+    $('daily-desc').textContent = `${thShort(state.start)} – ${thShort(state.end)} · ${fmt(M.valid.length)} ครั้ง · ${fmt(units)} หน่วย · เฉลี่ย ${fmt1(avg)} ครั้งต่อวัน`;
+
+    // วัน × ชั่วโมง
+    const WD = ['จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.', 'อา.'];
+    const hours = []; for (let h = 8; h <= 19; h++) hours.push(h);
+    const cell = {};
+    M.valid.forEach(r => { const k = ((r.dt.getDay() + 6) % 7) + '|' + r.dt.getHours(); cell[k] = (cell[k] || 0) + 1; });
+    const max = Math.max(...Object.values(cell), 1);
+    const steps = ['var(--seq-1)', 'var(--seq-2)', 'var(--seq-3)', 'var(--seq-4)', 'var(--seq-5)'];
+    const stepOf = (n) => steps[Math.min(steps.length - 1, Math.ceil(n / max * steps.length) - 1)];
+    $('hm-week').innerHTML = `<thead><tr><th></th>${hours.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${WD.map((w, i) =>
+      `<tr><th class="row-h" scope="row">${w}</th>${hours.map(h => {
+        const n = cell[i + '|' + h] || 0;
+        if (!n) return `<td class="zero">·</td>`;
+        const light = Math.ceil(n / max * steps.length) <= 3;
+        return `<td style="background:${stepOf(n)};color:${light ? 'var(--ink)' : '#fff'};font-weight:700" data-tip="<b>${w} ${h}:00–${h}:59</b><br>${n} ครั้ง">${n}</td>`;
+      }).join('')}</tr>`).join('')}</tbody>`;
+    $('hm-week-key').innerHTML = 'น้อย ' + steps.map(s => `<i style="background:${s}"></i>`).join('') + ' มาก · ตัวเลข = จำนวนครั้ง · หัวคอลัมน์ = ชั่วโมง';
+
+    // 10 อันดับ
+    const by = {};
+    M.valid.forEach(r => { const x = by[r.sku] = by[r.sku] || { sku: r.sku, n: 0, q: 0 }; x.n++; x.q += r.qty; });
+    const top = Object.values(by).sort((a, b) => b.n - a.n || b.q - a.q).slice(0, 10);
+    barChart($('top-bars'), top.map(x => {
+      const d = drugs[x.sku];
+      return { sku: x.sku, plain: `${d.generic_name} ${d.strength}`, label: `${esc(d.generic_name)} <small>${esc(sstr(d.strength))}</small>`,
+        value: x.n, display: `${x.n}<small> ครั้ง · ${fmt(x.q)}</small>`,
+        tip: `<b>${esc(d.generic_name)} ${esc(d.strength)}</b><br>${x.n} ครั้ง · ${fmt(x.q)} ${unit(d)}` };
+    }));
+
+    // เภสัชกร
+    const rx = {};
+    M.inRange.forEach(r => {
+      const x = rx[r.pharmacist_code] = rx[r.pharmacist_code] || { code: r.pharmacist_code, n: 0, q: 0, fefo: 0, inc: 0, flag: 0 };
+      if (r.valid) { x.n++; x.q += r.qty; if (r.fefoAlt.length) x.fefo++; }
+      if (r.incident_ref) x.inc++;
+      if (isFlagged(r)) x.flag++;
+    });
+    const rxs = Object.values(rx).sort((a, b) => a.code.localeCompare(b.code));
+    $('rx-table').innerHTML = `<thead><tr><th>เภสัชกร</th><th class="num">จ่าย (ครั้ง)</th><th class="num">หน่วย</th><th class="num">ไม่ตาม FEFO</th><th class="num">จ่ายยาหมดอายุ</th><th class="num">รายการติดธง</th></tr></thead>
+      <tbody>${rxs.map(x => `<tr class="clickable" data-rx="${esc(x.code)}" tabindex="0"><td class="name">${esc(x.code)}</td><td class="num">${x.n}</td><td class="num">${fmt(x.q)}</td>
+        <td class="num">${x.fefo ? ICO.serious + ' ' : ''}${x.fefo}${x.n ? `<span class="sku"> (${Math.round(x.fefo / x.n * 100)}%)</span>` : ''}</td>
+        <td class="num">${x.inc ? ICO.critical + ' ' : ''}${x.inc}</td><td class="num">${x.flag}</td></tr>`).join('')}</tbody>`;
+
+    // ความปลอดภัย
+    $('incidents').innerHTML = M.incidents.length ? `<ul class="actions" style="margin-bottom:16px">${M.incidents.map(r => `<li>${ICO.critical}
+      <div><div class="a-title">${esc(r.incident_ref)}: จ่าย ${esc(r.drug ? r.drug.generic_name : r.sku)} จากล็อตหมดอายุ ${esc(r.lot)}</div>
+      <div class="a-sub">${esc(r.dispense_id)} · ${r.dt.toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' })} · ${esc(r.pharmacist_code)} · ผู้ป่วย ${esc(r.patient_code)}${r.lotRow && r.lotRow.expD ? ` · ล็อตหมดอายุ ${thShort(r.lotRow.expD)}` : ''}</div></div>
+      <button type="button" class="go" data-sku="${esc(r.sku)}">รายละเอียด</button></li>`).join('')}</ul>`
+      : `<p class="note-line">${ICO.good} ไม่มีการจ่ายยาจากล็อตหมดอายุในช่วงนี้</p>`;
+    const fb = {};
+    M.fefo.forEach(r => fb[r.sku] = (fb[r.sku] || 0) + 1);
+    const fr = Object.entries(fb).sort((a, b) => b[1] - a[1]);
+    barChart($('fefo-bars'), fr.map(([k, n]) => {
+      const d = drugs[k];
+      return { sku: k, plain: d.generic_name, label: `${esc(d.generic_name)} <small>${esc(sstr(d.strength))}</small>`, value: n, color: 'var(--serious)',
+        display: `${n}<small> ครั้ง</small>`, tip: `<b>${esc(d.generic_name)}</b><br>หยิบล็อตใหม่ ${n} ครั้ง ทั้งที่มีล็อตที่หมดอายุเร็วกว่า` };
+    }));
+    $('fefo-note').textContent = M.fefo.length
+      ? `หยิบไม่ตาม FEFO ${M.fefo.length} ครั้ง จาก ${M.valid.length} ครั้ง (${Math.round(M.fefo.length / Math.max(M.valid.length, 1) * 100)}%) · ดูรายการได้ในตารางด้านล่างโดยเลือก "หยิบไม่ตาม FEFO"`
+      : 'ไม่พบการหยิบไม่ตาม FEFO ในช่วงนี้';
+
+    renderLog();
+  }
+  function renderLog() {
+    const rxCodes = [...new Set(log.map(r => r.pharmacist_code))].sort();
+    if ($('log-rx').options.length !== rxCodes.length + 1) {
+      const cur = $('log-rx').value;
+      $('log-rx').innerHTML = '<option value="">เภสัชกรทุกคน</option>' + rxCodes.map(c => `<option>${esc(c)}</option>`).join('');
+      $('log-rx').value = cur;
+    }
+    const q = $('log-q').value.trim().toLowerCase(), rx = $('log-rx').value, t = $('log-type').value;
+    const rows = M.inRange.filter(r =>
+      (!rx || r.pharmacist_code === rx) &&
+      (!q || [r.sku, r.lot, r.patient_code, r.dispense_id, r.drug ? r.drug.generic_name : ''].some(v => String(v).toLowerCase().includes(q))) &&
+      (!t || (t === 'dispense' ? r.valid : t === 'fefo' ? r.fefoAlt.length > 0 : t === 'incident' ? !!r.incident_ref : t === 'void' ? r.type === 'void' : isFlagged(r)))
+    ).sort((a, b) => b.dt - a.dt);
+    $('log-table').innerHTML = `<thead><tr><th>รหัส</th><th>วันเวลา</th><th>ยา</th><th>ล็อต</th><th class="num">จำนวน</th><th>ผู้ป่วย</th><th>เภสัชกร</th><th>หมายเหตุ</th></tr></thead>
+      <tbody>${rows.length ? rows.map(r => {
+        const notes = [];
+        if (r.type === 'void') notes.push('<span class="tag">ยกเลิก</span>');
+        if (isFlagged(r)) notes.push(`<span class="tag warn" title="${esc(r.review.reason)}">รอตรวจ</span>`);
+        if (r.review && r.review.status === 'inferred') notes.push(`<span class="tag info" title="${esc(r.review.reason)}">อนุมานล็อต</span>`);
+        if (r.incident_ref) notes.push(`<span class="badge">${ICO.critical}${esc(r.incident_ref)} ล็อตหมดอายุ</span>`);
+        if (r.fefoAlt.length) notes.push(`<span class="badge">${ICO.serious}ควรใช้ ${esc(r.fefoAlt.join(', '))} ก่อน</span>`);
+        if (r.legacy_id) notes.push(`<span class="sku">รหัสเดิม ${esc(r.legacy_id)}</span>`);
+        return `<tr class="clickable" data-sku="${esc(r.sku)}" tabindex="0"><td class="sku">${esc(r.dispense_id)}</td>
+          <td>${r.dt.toLocaleString('th-TH', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</td>
+          <td><span class="name">${esc(r.drug ? r.drug.generic_name : r.sku)}</span> ${r.drug ? esc(sstr(r.drug.strength)) : ''}</td>
+          <td>${esc(r.lot)}</td><td class="num">${esc(r.qty)}${r.drug ? ' ' + unit(r.drug) : ''}</td>
+          <td>${esc(r.patient_code)}</td><td>${esc(r.pharmacist_code)}</td><td style="white-space:normal">${notes.join(' ') || '<span class="muted">–</span>'}</td></tr>`;
+      }).join('') : `<tr><td class="empty" colspan="8">ไม่พบรายการที่ตรงกับตัวกรอง</td></tr>`}</tbody>`;
+    $('log-count').textContent = `แสดง ${rows.length} จาก ${M.inRange.length} รายการในช่วงนี้`;
+  }
+
+  // ================= คุณภาพข้อมูล =================
+  function renderQuality() {
+    const flags = [
+      ...lots.filter(l => l.review).map(l => ({ file: 'stock.json', id: l.stock_id, what: `${l.drug.generic_name} ล็อต ${l.lot}`, st: l.review.status, reason: l.review.reason, sku: l.sku })),
+      ...log.filter(r => r.review).map(r => ({ file: 'dispense-log.json', id: r.dispense_id, what: `${r.drug ? r.drug.generic_name : r.sku} · ${r.day}`, st: r.review.status, reason: r.review.reason, sku: r.sku }))
+    ];
+    const issues = RAW.issues ? RAW.issues.items : [];
+    const k = (lbl, v) => `<div><b>${v}</b><span>${lbl}</span></div>`;
+    $('q-kpis').innerHTML = k('รอตรวจ (ไม่นำมาคำนวณ)', flags.filter(f => f.st === 'needs_review').length)
+      + k('อนุมานจากหลักฐาน', flags.filter(f => f.st === 'inferred').length)
+      + k('การแก้ไขที่บันทึกไว้', RAW.issues ? issues.length : 'ไม่พบไฟล์');
+    $('q-flags').innerHTML = `<thead><tr><th>ไฟล์</th><th>รหัส</th><th>รายการ</th><th>สถานะ</th><th>เหตุผล</th></tr></thead><tbody>${flags.map(f => `
+      <tr class="clickable" data-sku="${esc(f.sku)}" tabindex="0"><td class="sku">${esc(f.file)}</td><td class="name">${esc(f.id)}</td><td>${esc(f.what)}</td>
+      <td>${f.st === 'needs_review' ? '<span class="tag warn">รอตรวจ</span>' : '<span class="tag info">อนุมาน</span>'}</td>
+      <td style="white-space:normal;min-width:280px">${esc(f.reason)}</td></tr>`).join('')}</tbody>`;
+    const ACT = { restored: 'คืนแถว', quarantined: 'กักไว้', added_field: 'เพิ่มช่อง', status_changed: 'เปลี่ยนสถานะ', inferred: 'อนุมาน', flagged: 'ติดธง', normalized: 'ปรับรูปแบบ' };
+    $('q-log').innerHTML = RAW.issues ? `<thead><tr><th>ไฟล์</th><th>รหัส</th><th>การแก้ไข</th><th>รายละเอียด</th></tr></thead><tbody>${issues.map(i => `
+      <tr><td class="sku">${esc(i.file)}</td><td class="name">${esc(i.id)}</td><td><span class="tag">${esc(ACT[i.action] || i.action)}</span></td>
+      <td style="white-space:normal;min-width:280px">${esc(i.detail)}</td></tr>`).join('')}</tbody>`
+      : `<tbody><tr><td class="empty">ไม่พบไฟล์ data-issues.json</td></tr></tbody>`;
+  }
+
+  // ================= หน้าต่างรายละเอียดยา =================
+  let lastFocus = null;
+  function openDrawer(k) {
+    const d = drugs[k];
+    if (!d) return;
+    const x = M.sku[k];
+    lastFocus = document.activeElement;
+    const recent = M.inRange.filter(r => r.sku === k).sort((a, b) => b.dt - a.dt).slice(0, 8);
+    const u = x ? urgency(x) : null;
+    $('dr-body').innerHTML = `<div class="dr-head">
+      <h3 id="dr-title">${esc(d.generic_name)}</h3>
+      <div class="strength">${esc(d.strength)} · ${esc(d.dosage_form)}</div>
+      <div class="meta">SKU ${esc(d.sku)} · ${esc(d.category)} · ATC ${esc(d.atc_code)}</div>
+      ${x ? `<span class="badge">${ICO[u]}${URG_LABEL[u]}</span>` : '<span class="badge">ไม่มีข้อมูลสต็อก</span>'}
+    </div><div class="dr-rest">
+      ${x ? `<section>
+        <h4>สต็อกที่ขายได้</h4>
+        <div class="stock-big"><b>${fmt(x.onHand)}</b><span>${unit(d)}</span></div>
+        <dl class="facts">
+          <dt>จ่ายเฉลี่ย (ช่วงที่เลือก)</dt><dd>${fmt1(x.rate)} ${unit(d)}/วัน <span>(${fmt(x.used)} ใน ${M.days} วัน)</span></dd>
+          <dt>พอใช้อีก</dt><dd>${x.rate > 0 ? fmt(x.cover) + ' วัน' : '<span>ไม่มีการจ่ายในช่วงนี้</span>'}</dd>
+          <dt>จุดสั่งซื้อ</dt><dd>${fmt(x.rop)} <span>(บัญชียา ${fmt(d.reorder_level)})</span></dd>
+          <dt>มูลค่า</dt><dd>${baht(x.value)}</dd>
+        </dl>
+        ${x.need ? `<div class="callout">${ICO.serious} แนะนำให้สั่ง <b>${fmt(state.poQty[k])} ${unit(d)}</b> ประมาณ ${baht(state.poQty[k] * x.cost)}</div>` : ''}
+      </section>
+      <section>
+        <h4>ล็อต</h4>
+        <table class="data"><thead><tr><th>ล็อต</th><th>สถานะ</th><th class="num">คงเหลือ</th><th>หมดอายุ</th></tr></thead><tbody>
+        ${x.lots.slice().sort((a, b) => (a.expD || Infinity) - (b.expD || Infinity)).map(l => `<tr><td>${esc(l.lot)}</td><td>${({ active: 'ขายได้', quarantine: 'กักไว้', written_off: 'ตัดทิ้ง', depleted: 'หมดแล้ว' })[l.status] || esc(l.status)}</td>
+          <td class="num">${fmt(l.qty_on_hand)}</td><td>${l.expD ? thShort(l.expD) : '–'}${l.sellable && l.atRisk > 0 ? `<br><span class="sku">คาดว่าเหลือทิ้ง ${fmt(l.atRisk)}</span>` : ''}</td></tr>`).join('')}
+        </tbody></table>
+      </section>` : `<section><p class="muted">ยานี้ไม่มีข้อมูลในสต็อก</p></section>`}
+      <section>
+        <h4>การจ่ายล่าสุดในช่วงที่เลือก</h4>
+        ${recent.length ? `<table class="data"><thead><tr><th>วัน</th><th>ล็อต</th><th class="num">จำนวน</th><th>โดย</th></tr></thead><tbody>
+          ${recent.map(r => `<tr><td>${thDM(r.dt)}${r.type === 'void' ? ' <span class="tag">ยกเลิก</span>' : ''}${isFlagged(r) ? ' <span class="tag warn">รอตรวจ</span>' : ''}</td>
+            <td>${esc(r.lot)}${r.fefoAlt.length ? ' ' + ICO.serious : ''}${r.incident_ref ? ' ' + ICO.critical : ''}</td><td class="num">${esc(r.qty)}</td><td>${esc(r.pharmacist_code)}</td></tr>`).join('')}
+        </tbody></table>` : '<p class="muted">ไม่มีการจ่ายในช่วงนี้</p>'}
+      </section></div>`;
+    $('overlay').hidden = false; $('drawer').hidden = false;
+    requestAnimationFrame(() => { $('overlay').classList.add('show'); $('drawer').classList.add('show'); $('dr-close').focus(); });
+    tip.classList.remove('show');
+  }
+  function closeDrawer() {
+    if ($('drawer').hidden) return;
+    $('overlay').classList.remove('show'); $('drawer').classList.remove('show');
+    setTimeout(() => { $('overlay').hidden = true; $('drawer').hidden = true; }, 220);
+    if (lastFocus) lastFocus.focus();
+    tip.classList.remove('show');
+  }
+
+  // ================= แสดงผลทั้งหมด =================
+  function renderPeriod() {
+    document.querySelectorAll('[data-preset]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.preset === state.preset)));
+    $('custom-range').hidden = state.preset !== 'custom';
+    $('d-start').min = $('d-end').min = iso(LOG_START);
+    $('d-start').max = $('d-end').max = iso(LOG_END);
+    $('d-start').value = iso(state.start); $('d-end').value = iso(state.end);
+    $('period-range').innerHTML = `<b>${thShort(state.start)} – ${thShort(state.end)}</b> (${diffDays(state.start, state.end) + 1} วัน)`;
+  }
+  function renderAll() {
+    compute();
+    renderPeriod();
+    renderKpis();
+    renderOverview();
+    renderStock();
+    renderOrder();
+    renderDispense();
+    renderQuality();
+  }
+  function setTab(t, target) {
+    if (!document.querySelector(`[data-panel="${t}"]`)) t = 'overview';
+    state.tab = t; store.set('tab', t);
+    document.querySelectorAll('[data-panel]').forEach(p => p.hidden = p.dataset.panel !== t);
+    document.querySelectorAll('[data-tab]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.tab === t)));
+    if (target) $(target).scrollIntoView({ behavior: 'smooth', block: 'start' });
+    else window.scrollTo({ top: 0 });
+  }
+
+  // ================= เหตุการณ์ =================
+  document.addEventListener('click', e => {
+    if (e.target.closest('#drawer') && !e.target.closest('#dr-close')) return;
+    const t = e.target.closest('[data-tab]');
+    if (t) return setTab(t.dataset.tab);
+    const g = e.target.closest('[data-goto]');
+    if (g) return setTab(g.dataset.goto, g.dataset.target);
+    const p = e.target.closest('[data-preset]');
+    if (p) { setPreset(p.dataset.preset); return renderAll(); }
+    const tl = e.target.closest('[data-tl]');
+    if (tl) { state.tlFilter = tl.dataset.tl; state.tlAll = false; return renderStock(); }
+    if (e.target.closest('#tl-more')) { state.tlAll = !state.tlAll; return renderStock(); }
+    const bk = e.target.closest('[data-bucket]');
+    if (bk) { state.tlFilter = ['b30', 'b60', 'b90'].includes(bk.dataset.bucket) ? 'b90' : bk.dataset.bucket === 'b180' ? 'b180' : 'all'; renderStock(); return setTab('stock'); }
+    const rx = e.target.closest('[data-rx]');
+    if (rx) { $('log-rx').value = rx.dataset.rx; renderLog(); return $('log-card').scrollIntoView({ behavior: 'smooth' }); }
+    if (e.target.closest('input')) return;
+    const s = e.target.closest('[data-sku]');
+    if (s) { e.preventDefault(); openDrawer(s.dataset.sku); }
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') return closeDrawer();
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const el = e.target.closest('[data-sku][tabindex], [data-rx][tabindex]');
+    if (!el || el.tagName === 'BUTTON' || el.tagName === 'A') return;
+    e.preventDefault(); el.click();
+  });
+  $('dr-close').addEventListener('click', closeDrawer);
+  $('overlay').addEventListener('click', closeDrawer);
+  ['d-start', 'd-end'].forEach(id => $(id).addEventListener('change', () => {
+    if (!$('d-start').value || !$('d-end').value) return;
+    setPreset('custom', D($('d-start').value), D($('d-end').value));
+    store.set('range', [iso(state.start), iso(state.end)]);
+    renderAll();
+  }));
+  [['s-lead', 'lead'], ['s-safety', 'safety'], ['s-cycle', 'cycle']].forEach(([id, key]) => $(id).addEventListener('change', () => {
+    const v = Math.max(Number($(id).min), Math.min(Number($(id).max), Math.round(Number($(id).value) || 0)));
+    state[key] = v; store.set(key, v);
+    state.poEdited = {};
+    renderAll();
+  }));
+  $('po-table').addEventListener('input', e => {
+    const k = e.target.dataset.po;
+    if (!k) return;
+    state.poQty[k] = Math.max(0, Math.round(Number(e.target.value) || 0));
+    state.poEdited[k] = true;
+    updatePO(); renderKpis();
+  });
+  $('po-csv').addEventListener('click', () => {
+    const head = ['SKU', 'ชื่อยา', 'ความแรง', 'คงเหลือ', 'จ่ายต่อวัน', 'พอใช้ (วัน)', 'จุดสั่งซื้อ', 'จำนวนสั่ง', 'หน่วย', 'ต้นทุนต่อหน่วย', 'รวม (บาท)'];
+    const rows = Object.values(M.sku).filter(x => x.need && state.poQty[x.sku] > 0).sort((a, b) => a.cover - b.cover).map(x => [
+      x.sku, x.drug.generic_name, x.drug.strength, x.onHand, x.rate.toFixed(2), isFinite(x.cover) ? Math.round(x.cover) : '',
+      x.rop, state.poQty[x.sku], unit(x.drug), x.cost.toFixed(2), (state.poQty[x.sku] * x.cost).toFixed(2)]);
+    const cell = (v) => /[",\n]/.test(String(v)) ? '"' + String(v).replace(/"/g, '""') + '"' : String(v);
+    const csv = '﻿' + [head, ...rows].map(r => r.map(cell).join(',')).join('\r\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    a.download = `ใบสั่งซื้อ-${iso(AS_OF)}.csv`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  });
+  ['lot-q', 'lot-status'].forEach(id => $(id).addEventListener('input', renderStock));
+  ['log-q', 'log-rx', 'log-type'].forEach(id => $(id).addEventListener('input', renderLog));
+  $('log-clear').addEventListener('click', () => { $('log-q').value = ''; $('log-rx').value = ''; $('log-type').value = ''; renderLog(); });
+
+  // tooltip
+  const tip = $('tip');
+  function showTip(el, x, y) {
+    tip.innerHTML = el.dataset.tip;
+    tip.classList.add('show');
+    const r = tip.getBoundingClientRect();
+    let left = x + 16, top = y + 16;
+    if (left + r.width > innerWidth - 8) left = x - r.width - 16;
+    if (top + r.height > innerHeight - 8) top = y - r.height - 16;
+    tip.style.left = Math.max(8, left) + 'px'; tip.style.top = Math.max(8, top) + 'px';
+  }
+  document.addEventListener('pointermove', e => {
+    if (e.pointerType === 'touch') return;
+    const el = e.target.closest('[data-tip]');
+    if (el) showTip(el, e.clientX, e.clientY); else tip.classList.remove('show');
+  });
+  document.addEventListener('focusin', e => {
+    const el = e.target.closest('[data-tip]');
+    if (!el) return tip.classList.remove('show');
+    const r = el.getBoundingClientRect();
+    showTip(el, r.left + Math.min(r.width / 2, 200), r.bottom);
+  });
+  document.addEventListener('focusout', () => tip.classList.remove('show'));
+  addEventListener('scroll', () => tip.classList.remove('show'), { passive: true });
+
+  // ================= เริ่ม =================
+  $('asof').textContent = `สต็อก ณ ${thLong(AS_OF)} · บันทึกการจ่ายยา ${thShort(LOG_START)} – ${thShort(LOG_END)}`;
+  $('period-note').textContent = `สต็อกและวันหมดอายุคิด ณ ${thShort(AS_OF)} เสมอ`;
+  const savedRange = store.get('range', null);
+  if (state.preset === 'custom' && savedRange) setPreset('custom', D(savedRange[0]), D(savedRange[1]));
+  else setPreset(['7', '14', 'all'].includes(state.preset) ? state.preset : 'all');
+  renderAll();
+  setTab(state.tab);
+});
+</script>
+</body>
+</html>
